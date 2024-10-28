@@ -1,0 +1,137 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Subprotocol for committing `Block`s."><title>hotstuff_rs::hotstuff - Rust</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceSerif4-Regular-46f98efaafac5295.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/FiraSans-Regular-018c141bf0843ffd.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/FiraSans-Medium-8f9a781e4970d388.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2"><link rel="stylesheet" href="../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../static.files/rustdoc-5bc39a1768837dd0.css"><meta name="rustdoc-vars" data-root-path="../../" data-static-root-path="../../static.files/" data-current-crate="hotstuff_rs" data-themes="" data-resource-suffix="" data-rustdoc-version="1.77.2 (25ef9e3d8 2024-04-09)" data-channel="1.77.2" data-search-js="search-dd67cee4cfa65049.js" data-settings-js="settings-4313503d2e1961c2.js" ><script src="../../static.files/storage-4c98445ec4002617.js"></script><script defer src="../sidebar-items.js"></script><script defer src="../../static.files/main-48f368f3872407c8.js"></script><noscript><link rel="stylesheet" href="../../static.files/noscript-04d5337699b92874.css"></noscript><link rel="alternate icon" type="image/png" href="../../static.files/favicon-16x16-8b506e7a72182f1c.png"><link rel="alternate icon" type="image/png" href="../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc mod"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle" title="show sidebar"></button></nav><nav class="sidebar"><div class="sidebar-crate"><h2><a href="../../hotstuff_rs/index.html">hotstuff_rs</a><span class="version">0.4.0</span></h2></div><h2 class="location"><a href="#">Module hotstuff</a></h2><div class="sidebar-elems"><section><ul class="block"><li><a href="#modules">Modules</a></li></ul></section><h2><a href="../index.html">In crate hotstuff_rs</a></h2></div></nav><div class="sidebar-resizer"></div>
+    <main><div class="width-limiter"><nav class="sub"><form class="search-form"><span></span><div id="sidebar-button" tabindex="-1"><a href="../../hotstuff_rs/all.html" title="show sidebar"></a></div><input class="search-input" name="search" aria-label="Run search in the documentation" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" tabindex="-1"><a href="../../help.html" title="help">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../static.files/wheel-7b819b6101059cd0.svg"></a></div></form></nav><section id="main-content" class="content"><div class="main-heading"><h1>Module <a href="../index.html">hotstuff_rs</a>::<wbr><a class="mod" href="#">hotstuff</a><button id="copy-path" title="Copy item path to clipboard"><img src="../../static.files/clipboard-7571035ce49a181d.svg" width="19" height="18" alt="Copy item path"></button></h1><span class="out-of-band"><a class="src" href="../../src/hotstuff_rs/hotstuff/mod.rs.html#1-175">source</a> · <button id="toggle-all-docs" title="collapse all docs">[<span>&#x2212;</span>]</button></span></div><details class="toggle top-doc" open><summary class="hideme"><span>Expand description</span></summary><div class="docblock"><p>Subprotocol for committing <code>Block</code>s.</p>
+<h2 id="introduction"><a class="doc-anchor" href="#introduction">§</a>Introduction</h2>
+<p>The HotStuff subprotocol is the core of HotStuff-rs BFT SMR.</p>
+<p>As the rustdocs for <code>state::invariants</code> <a href="../state/invariants/index.html#committing-a-block" title="mod hotstuff_rs::state::invariants">explains</a>,
+the block tree commits a block when its <a href="../state/block_tree/struct.BlockTree.html#method.update" title="method hotstuff_rs::state::block_tree::BlockTree::update"><code>update</code></a>
+method creates a “3-Chain” extending the block. Fundamentally, the role of the HotStuff subprotocol
+is to drive this process by orchestrating validators to work together to <em>create</em> the building
+blocks of 3-Chains, namely <code>PhaseCertificate</code>s. Prerequisite to the HotStuff subprotocol being able
+to reliably create new <code>PhaseCertificates</code> is for a quorum of validators to be in the same view for
+a “long enough” duration of time, which HotStuff-rs guarantees via the
+<a href="../pacemaker/index.html" title="mod hotstuff_rs::pacemaker"><code>pacemaker</code></a> subprotocol.</p>
+<p>The HotStuff subprotocol is based on the “HotStuff” SMR algorithm described in the
+<a href="https://dl.acm.org/doi/pdf/10.1145/3293611.3331591">PODC ‘19 paper</a> by Yin, et al., but deviates
+significantly from the original algorithm to enable a useful feature, namely <strong>dynamic validator set
+updates</strong>.</p>
+<h2 id="challenges-for-dynamic-validator-set-updates"><a class="doc-anchor" href="#challenges-for-dynamic-validator-set-updates">§</a>Challenges for dynamic validator set updates</h2>
+<p>Concretely, support for dynamic validator set updates in HotStuff-rs means that <code>Block</code>s can cause
+validator set updates in the same way they can cause app state updates. <code>App</code>s trigger the creation
+of a validator-set-updating block by returning a <code>ProduceBlockResponse</code> with
+<a href="../app/struct.ProduceBlockResponse.html#structfield.validator_set_updates" title="field hotstuff_rs::app::ProduceBlockResponse::validator_set_updates"><code>Some(validator_set_updates)</code></a> from
+<code>produce_block</code>.</p>
+<p>But trying to implement dynamic validator set updates directly on top of the original “Chained
+HotStuff” algorithm as specified in the PODC ’19 paper raises two difficult challenges,
+specifically: 1. A <strong>usability challenge</strong>, and 2. A <strong>liveness challenge</strong>.</p>
+<p>The following two subsections discuss each challenge in turn. Then, the next section discusses how
+HotStuff-rs’ HotStuff subprotocol solves them.</p>
+<h3 id="usability-challenge"><a class="doc-anchor" href="#usability-challenge">§</a>Usability challenge</h3>
+<p>In Chained HotStuff, a block only becomes committed when a 3-Chain is built on top of it. This means
+that validator set updates do not happen “immediately”: if block <code>B</code> updates the validator set,
+blocks <code>B'</code> and <code>B''</code> (where <code>B &lt;- B' &lt;- B''</code> and “<code>&lt;-</code>” is a <code>justify</code>-link) will still be proposed
+and voted on by members of the previous, non-updated validator set.</p>
+<p>This behavior could be confusing for users, especially considering that app state updates (the
+other of the <a href="../app/index.html#two-app-mutable-states-app-state-and-validator-set" title="mod hotstuff_rs::app">two kinds of updates</a>
+that a block could cause) <em>are</em> immediate, because of the buffering of pending ancestor app state
+updates by <code>AppBlockTreeView</code>.</p>
+<p>Even worse, while 3-Chain is a necessary requirement for a block to become committed, it is not a
+sufficient requirement. In particular, commitment in Chained HotStuff additionally requires
+<a href="../state/invariants/index.html#committing-a-block" title="mod hotstuff_rs::state::invariants">“consecutive views”</a>, and because <code>justify</code>-links
+between consecutive blocks do not, by default, have consecutive views, implementing dynamic
+validator set updates directly on Chained HotStuff would make it so that there is no upper bound
+on how many blocks have to follow a validator-set-updating block in order for its validator set
+updates to be committed.</p>
+<p>For our SMR algorithm, we would like validator set updates to happen immediately. Specifically,
+validator set updates must satisfy a property we call <strong>“immediacy”</strong>: if a block updates the
+validator set from <code>VS1</code> to <code>VS2</code>, then children of the block must be proposed by a member of <code>VS2</code>,
+and voted on by members of <code>VS2</code>.</p>
+<h3 id="liveness-challenge"><a class="doc-anchor" href="#liveness-challenge">§</a>Liveness challenge</h3>
+<p>Both Chained and non-Chained HotStuff algorithms described in the PODC ’19 paper implicitly assume
+that all replicas keep track of exactly one, constant validator set. Supporting dynamic validator
+sets, then, minimally means replacing this constant validator set with a variable validator set.</p>
+<p>But this change alone is not enough to produce a workable SMR algorithm. In particular, we’ll see
+that unless these algorithms are changed further so that replicas can track <em>multiple</em> validator
+sets, they are vulnerable to a serious liveness problem.</p>
+<p>Consider a version of the Chained HotStuff algorithm minimally modified to support dynamic validator
+sets and where replicas only keep track of a single validator set at any given time; that is, the
+latest validator set that the replica is aware of.</p>
+<p>Then, let <code>U</code> denote a validator set update <code>VS1 -U-&gt; VS2</code> from validator set <code>VS1</code> to another
+validator set <code>VS2</code>. In this setting, we could enter a situation where:</p>
+<ul>
+<li><strong>Over</strong> 1/3rd of replicas in <code>VS1</code> have committed <code>U</code>,</li>
+<li>but <strong>less than</strong> 2/3rds of replicas in <code>VS2</code> have committed <code>U</code>.</li>
+</ul>
+<p>In such a situation, neither <code>VS1</code> or <code>VS2</code> will have a quorum of active validators, so no more new
+<code>PhaseCertificate</code>s can be created. Then, if no existing <code>PhaseCertificate</code>s are set to arrive or
+rebroadcasted to bring more replicas in <code>VS2</code> to commit <code>U</code>, the block tree will permanently cease
+to grow.</p>
+<h2 id="solving-the-usability-and-liveness-challenges"><a class="doc-anchor" href="#solving-the-usability-and-liveness-challenges">§</a>Solving the usability and liveness challenges</h2>
+<p>To solve the usability and liveness challenges, the HotStuff subprotocol differs from PODC ’19
+HotStuff in <strong>three</strong> ways. All of these differences are “additive”, that is, they add new behavior
+on top of PODC ’19 HotStuff, as opposed to removing or modifying existing behavior.</p>
+<p>The below subsections explain how each difference works to solve the usability and liveness
+challenges. In summary: d.o.m. solves the usability problem, v.s.s. solves the liveness problem, and
+t.d.p. makes v.s.s. easier to implement.</p>
+<h3 id="dual-operating-modes"><a class="doc-anchor" href="#dual-operating-modes">§</a>Dual operating modes</h3>
+<p>The HotStuff subprotocol solves the problem of <strong>immediacy</strong> of validator set updates by
+implementing two <strong>“operating modes”</strong>, the first used exclusively to commit non-validator set
+updating blocks, and the second used exclusively to commit validator set updating blocks. These two
+modes differ chiefly in the <a href="types/enum.Phase.html" title="enum hotstuff_rs::hotstuff::types::Phase"><code>Phase</code></a>s of the QCs that are produced in each mode:</p>
+<ul>
+<li><strong>Pipelined mode</strong>: Only <code>Generic</code> QCs are produced, and they serve as <code>Prepare</code> QC for
+<code>justify.block</code>, <code>Precommit</code> QC for its parent, and <code>Commit</code> QC for its grandparent. This mode
+corresponds to Algorithm 3 (aka., Chained HotStuff) in the PODC ’19 paper.</li>
+<li><strong>Phased mode</strong>: Only <code>Prepare</code>, <code>Precommit</code>, <code>Commit</code>, and <code>Decide</code> QCs are produced, and the only
+block they justify is <code>justify.block</code>. This mode corresponds to Algorithm 1 in the PODC ’19 paper.</li>
+</ul>
+<p>Phased mode ensures that a validator-set-updating block is committed before work on any of its
+children begins. It does so by orchestrating replicas through multiple rounds of consensus decisions
+<em>without</em> ever proposing a new <code>Block</code>.</p>
+<p>The message type that the phased mode uses to initiate these consensus decisions is the
+<a href="messages/struct.Nudge.html" title="struct hotstuff_rs::hotstuff::messages::Nudge"><code>Nudge</code></a>. These are like the <a href="messages/struct.Proposal.html" title="struct hotstuff_rs::hotstuff::messages::Proposal"><code>Proposal</code></a>s that the pipelined
+mode uses, but contain a <code>justify</code> field instead of a <code>block</code>.</p>
+<p>During a view in the phased mode, the proposer broadcasts a <code>Nudge</code> to all replicas, and all
+validators reply with a <code>Vote</code> where <code>vote.phase</code> is the phase <em>immediately after</em>
+<code>nudge.justify.phase</code>. This means, for example, that the reply to a nudge containing a <code>Precommit</code>
+PC must be a vote with <code>vote.phase == Commit</code>.</p>
+<h3 id="validator-set-speculation"><a class="doc-anchor" href="#validator-set-speculation">§</a>Validator set speculation</h3>
+<p>HotStuff-rs’ insight from the discussion about the liveness issue is that in order of validator set
+updates to reliably be committed, the network must always be able to create new <code>PhaseCertificate</code>s,
+and in order for new <code>PhaseCertificate</code>s to be created during a validator set update, at least <em>one</em>
+validator set must contain a quorum of active validators at any given time.</p>
+<p>The way HotStuff-rs guarantees that this property holds was hinted in the discussion about liveness
+issue, which is to have replicas keep track of multiple validator sets, and in particular both the
+previous validator set and the committed validator set. We call keeping track and participating in
+multiple validator sets <strong>“validator set speculation”</strong>, and refer to the validator sets that a
+given replica is currently participating in as its <strong>“active validator sets”</strong>.</p>
+<p>Validator set speculation is implemented in HotStuff-rs by keeping track of both the committed
+validator set and the previous validator set in the block tree’s
+<a href="../state/block_tree/index.html#validator-set" title="mod hotstuff_rs::state::block_tree">validator set state</a>.</p>
+<h3 id="the-decide-phase"><a class="doc-anchor" href="#the-decide-phase">§</a>The <code>Decide</code> phase</h3>
+<p>However, validator set speculation comes at a cost. While speculating, replicas may have to propose,
+nudge, and vote (sometimes multiple times) in a single view. This extra activity requires extra
+computational complexity, and since views have a fixed timeout (enforced by the
+<a href="../pacemaker/index.html" title="mod hotstuff_rs::pacemaker"><code>pacemaker</code></a>) there might not be enough time in a view to participate in every
+validator set.</p>
+<p>So we need validator set speculation to ensure liveness, but to make validator set speculation
+actually feasible to implement, we need to <em>limit</em> the time that a replica spends in speculation to
+be as short as actually necessary.</p>
+<p>The HotStuff subprotocol limits time spent in speculation by introducing an additional voting phase
+called <a href="types/enum.Phase.html#variant.Decide" title="variant hotstuff_rs::hotstuff::types::Phase::Decide"><code>Decide</code></a>, which is executed after the <code>Commit</code> phase.</p>
+<p>Using the <code>VS1 -U-&gt; VS2</code> notation introduced in a previous section, the special thing about the
+<code>Decide</code> phase compared to the other phases used in the phased mode is that <code>PhaseCertificate</code>s with
+<code>pc.phase == Decide</code> contain signatures from <code>VS2</code>, as opposed to PCs from other phases, which
+contain signatures from <code>VS1</code>.</p>
+<p><code>Decide</code> allows the HotStuff subprotocol to define a minimal validator set speculation period.
+Concretely, the period in which a replica speculates on validator set update <code>U</code> (and therefore
+participates in both <code>VS1</code> and <code>VS2</code>):</p>
+<ul>
+<li><strong>Begins</strong> when a <code>Commit</code> PC is received that justifies the block that caused <code>U</code>,</li>
+<li>and <strong>ends</strong> when when a <code>Decide</code> PC is received that justifies the same block.</li>
+</ul>
+<p>Ending validator set speculation upon receiving a <code>Decide</code> PC guarantees liveness because a <code>Decide</code>
+PC being formed for the block that caused <code>U</code> implies that a quorum (more than 2/3rds) of validators
+in <code>VS2</code> have committed <code>U</code>, and therefore are ready to form new <code>PhaseCertificate</code>s.</p>
+</div></details><h2 id="modules" class="section-header">Modules<a href="#modules" class="anchor">§</a></h2><ul class="item-table"><li><div class="item-name"><a class="mod" href="implementation/index.html" title="mod hotstuff_rs::hotstuff::implementation">implementation</a><span title="Restricted Visibility">&nbsp;🔒</span> </div><div class="desc docblock-short">Event-driven implementation of the HotStuff subprotocol, as specified in
+<a href="sequence_flow/index.html" title="mod hotstuff_rs::hotstuff::sequence_flow"><code>sequence_flow</code></a>.</div></li><li><div class="item-name"><a class="mod" href="messages/index.html" title="mod hotstuff_rs::hotstuff::messages">messages</a></div><div class="desc docblock-short">Messages that are sent between replicas as part of the HotStuff subprotocol.</div></li><li><div class="item-name"><a class="mod" href="roles/index.html" title="mod hotstuff_rs::hotstuff::roles">roles</a><span title="Restricted Visibility">&nbsp;🔒</span> </div><div class="desc docblock-short">Functions that determine what roles a replica should play at any given View and Validator Set State.</div></li><li><div class="item-name"><a class="mod" href="sequence_flow/index.html" title="mod hotstuff_rs::hotstuff::sequence_flow">sequence_flow</a><span title="Restricted Visibility">&nbsp;🔒</span> </div><div class="desc docblock-short">Specification of the sequence flow of the event-driven <a href="implementation/index.html" title="mod hotstuff_rs::hotstuff::implementation"><code>implementation</code></a>
+of the HotStuff subprotocol.</div></li><li><div class="item-name"><a class="mod" href="types/index.html" title="mod hotstuff_rs::hotstuff::types">types</a></div><div class="desc docblock-short">Types specific to the HotStuff subprotocol.</div></li></ul></section></div></main></body></html>

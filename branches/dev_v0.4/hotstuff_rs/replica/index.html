@@ -1,0 +1,104 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Methods for building and running a replica as well as initializing its storage."><title>hotstuff_rs::replica - Rust</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceSerif4-Regular-46f98efaafac5295.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/FiraSans-Regular-018c141bf0843ffd.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/FiraSans-Medium-8f9a781e4970d388.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2"><link rel="stylesheet" href="../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../static.files/rustdoc-5bc39a1768837dd0.css"><meta name="rustdoc-vars" data-root-path="../../" data-static-root-path="../../static.files/" data-current-crate="hotstuff_rs" data-themes="" data-resource-suffix="" data-rustdoc-version="1.77.2 (25ef9e3d8 2024-04-09)" data-channel="1.77.2" data-search-js="search-dd67cee4cfa65049.js" data-settings-js="settings-4313503d2e1961c2.js" ><script src="../../static.files/storage-4c98445ec4002617.js"></script><script defer src="../sidebar-items.js"></script><script defer src="../../static.files/main-48f368f3872407c8.js"></script><noscript><link rel="stylesheet" href="../../static.files/noscript-04d5337699b92874.css"></noscript><link rel="alternate icon" type="image/png" href="../../static.files/favicon-16x16-8b506e7a72182f1c.png"><link rel="alternate icon" type="image/png" href="../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc mod"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle" title="show sidebar"></button></nav><nav class="sidebar"><div class="sidebar-crate"><h2><a href="../../hotstuff_rs/index.html">hotstuff_rs</a><span class="version">0.4.0</span></h2></div><h2 class="location"><a href="#">Module replica</a></h2><div class="sidebar-elems"><section><ul class="block"><li><a href="#structs">Structs</a></li></ul></section><h2><a href="../index.html">In crate hotstuff_rs</a></h2></div></nav><div class="sidebar-resizer"></div>
+    <main><div class="width-limiter"><nav class="sub"><form class="search-form"><span></span><div id="sidebar-button" tabindex="-1"><a href="../../hotstuff_rs/all.html" title="show sidebar"></a></div><input class="search-input" name="search" aria-label="Run search in the documentation" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" tabindex="-1"><a href="../../help.html" title="help">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../static.files/wheel-7b819b6101059cd0.svg"></a></div></form></nav><section id="main-content" class="content"><div class="main-heading"><h1>Module <a href="../index.html">hotstuff_rs</a>::<wbr><a class="mod" href="#">replica</a><button id="copy-path" title="Copy item path to clipboard"><img src="../../static.files/clipboard-7571035ce49a181d.svg" width="19" height="18" alt="Copy item path"></button></h1><span class="out-of-band"><a class="src" href="../../src/hotstuff_rs/replica.rs.html#6-612">source</a> · <button id="toggle-all-docs" title="collapse all docs">[<span>&#x2212;</span>]</button></span></div><details class="toggle top-doc" open><summary class="hideme"><span>Expand description</span></summary><div class="docblock"><p>Methods for building and running a replica as well as initializing its storage.</p>
+<p>HotStuff-rs works to safely replicate a state machine in multiple processes. In our terminology,
+these processes are called ‘replicas’, and therefore the set of all replicas is called the
+‘replica set’. Each replica is uniquely identified by an Ed25519
+<a href="../types/validator_set/struct.VerifyingKey.html" title="struct hotstuff_rs::types::validator_set::VerifyingKey"><code>VerifyingKey</code></a>.</p>
+<p>They key components of this module are:</p>
+<ul>
+<li>The builder-pattern interface to construct a <a href="struct.ReplicaSpec.html" title="struct hotstuff_rs::replica::ReplicaSpec">specification of the replica</a> with:
+<ol>
+<li><code>ReplicaSpec::builder</code> to construct a <code>ReplicaSpecBuilder</code>,</li>
+<li>The setters of the <code>ReplicaSpecBuilder</code>, and</li>
+<li>The <code>ReplicaSpecBuilder::build</code> method to construct a <a href="struct.ReplicaSpec.html" title="struct hotstuff_rs::replica::ReplicaSpec"><code>ReplicaSpec</code></a>,</li>
+</ol>
+</li>
+<li>The function to <a href="struct.ReplicaSpec.html#method.start" title="method hotstuff_rs::replica::ReplicaSpec::start">start</a> a <a href="struct.Replica.html" title="struct hotstuff_rs::replica::Replica"><code>Replica</code></a> given its specification,</li>
+<li>The function to <a href="struct.Replica.html#method.initialize" title="associated function hotstuff_rs::replica::Replica::initialize">initialize</a> the replica’s <a href="../state/block_tree/index.html" title="mod hotstuff_rs::state::block_tree">Block Tree</a>,</li>
+<li><a href="struct.Replica.html" title="struct hotstuff_rs::replica::Replica">The type</a> which keeps the replica alive.</li>
+</ul>
+<h2 id="kinds-of-replicas"><a class="doc-anchor" href="#kinds-of-replicas">§</a>Kinds of replicas</h2>
+<p>At any given moment a Replica could either be a Validator, or a Listener, depending on whether it
+is currently allowed to take part in consensus decisions:</p>
+<ul>
+<li><strong>Validators</strong>: replicas that currently take part in consensus decisions.</li>
+<li><strong>Listeners</strong>: replicas that currently do not take part in consensus decisions, but rather
+merely replicates the block tree.</li>
+</ul>
+<p>As the definition above implies, the <strong>Validator Set</strong> is dynamic, and will change as
+<a href="../app/index.html#two-app-mutable-states-app-state-and-validator-set" title="mod hotstuff_rs::app"><strong>validator set-updating</strong></a> blocks
+are produced and committed.</p>
+<h3 id="becoming-a-listener"><a class="doc-anchor" href="#becoming-a-listener">§</a>Becoming a Listener</h3>
+<p>While HotStuff-rs keeps track of the current committed (and possibly the previous) validator set in
+the persistent block tree, it does not keep track of a “Listener Set” anywhere, and nor can the
+<code>App</code> ever specify “Listener Set Updates”.</p>
+<p>This begs the question: “if HotStuff-rs does not know who the listeners are, how can the listeners
+receive blocks and replicate the block tree?”</p>
+<p>In order for listeners to replicate the block tree, the library user should make sure that the
+<code>broadcast</code> method of the <a href="../networking/index.html" title="mod hotstuff_rs::networking">networking implementation</a> it provides sends messages to
+<strong>all</strong> the peers the replica is connected to, and not only the validators. The library user is free
+to implement their own mechanism or deciding which peers, besides those in the validator set, should
+be connected to the network. This reduces the process of becoming a listener to the process of
+becoming a peer in the user-provided network.
+messages.</p>
+<h2 id="starting-a-replica"><a class="doc-anchor" href="#starting-a-replica">§</a>Starting a replica</h2>
+<p>Below is an example that demonstrates how to build and start running a replica using the builder pattern:</p>
+
+<div class="example-wrap ignore"><a href="#" class="tooltip" title="This example is not tested">ⓘ</a><pre class="rust rust-example-rendered"><code><span class="kw">let </span>replica =
+    ReplicaSpec::builder()
+    .app(app)
+    .pacemaker(pacemaker)
+    .configuration(configuration)
+    .kv_store(kv_store)
+    .network(network)
+    .on_commit(commit_handler)
+    .on_nudge(nudge_handler)
+    .build()
+    .start()</code></pre></div>
+<h3 id="required-setters"><a class="doc-anchor" href="#required-setters">§</a>Required setters</h3>
+<p>The required setters are for providing the trait implementations required to run a replica:</p>
+<ul>
+<li><code>.app(...)</code></li>
+<li><code>.network(...)</code></li>
+<li><code>.kv_store(...)</code></li>
+<li><code>.pacemaker(...)</code></li>
+<li><code>.configuration(...)</code></li>
+</ul>
+<h3 id="optional-setters"><a class="doc-anchor" href="#optional-setters">§</a>Optional setters</h3>
+<p>The optional setters are for registering user-defined event handlers for events from <a href="../events/index.html" title="mod hotstuff_rs::events">crate::events</a>:</p>
+<ul>
+<li><code>.on_insert_block(...)</code></li>
+<li><code>.on_commit_block(...)</code></li>
+<li><code>.on_prune_block(...)</code></li>
+<li><code>.on_update_highest_pc(...)</code></li>
+<li><code>.on_update_locked_view(...)</code></li>
+<li><code>.on_update_validator_set(...)</code></li>
+<li><code>.on_propose(...)</code></li>
+<li><code>.on_nudge(...)</code></li>
+<li><code>.on_phase_vote(...)</code></li>
+<li><code>.on_new_view(...)</code></li>
+<li><code>.on_receive_proposal(...)</code></li>
+<li><code>.on_receive_nudge(...)</code></li>
+<li><code>.on_receive_phase_vote(...)</code></li>
+<li><code>.on_receive_new_view(...)</code></li>
+<li><code>.on_start_view(...)</code></li>
+<li><code>.on_view_timeout(...)]</code></li>
+<li><code>.on_collect_pc(...)</code></li>
+<li><code>.on_start_sync(...)</code></li>
+<li><code>.on_end_sync(...)</code></li>
+<li><code>.on_receive_sync_request(...)</code></li>
+<li><code>.on_receive_sync_response(...)</code></li>
+</ul>
+<p>The replica’s <a href="struct.Configuration.html" title="struct hotstuff_rs::replica::Configuration">configuration</a> can also be defined using the builder pattern, for example:</p>
+
+<div class="example-wrap ignore"><a href="#" class="tooltip" title="This example is not tested">ⓘ</a><pre class="rust rust-example-rendered"><code><span class="kw">let </span>configuration =
+    Configuration::builder()
+    .me(keypair)
+    .chain_id(<span class="number">0</span>)
+    .sync_request_limit(<span class="number">10</span>)
+    .sync_response_timeout(Duration::new(<span class="number">3</span>, <span class="number">0</span>))
+    .progress_msg_buffer_capacity(<span class="number">1024</span>)
+    .log_events(<span class="bool-val">true</span>)
+    .build()</code></pre></div>
+</div></details><h2 id="structs" class="section-header">Structs<a href="#structs" class="anchor">§</a></h2><ul class="item-table"><li><div class="item-name"><a class="struct" href="struct.Configuration.html" title="struct hotstuff_rs::replica::Configuration">Configuration</a></div><div class="desc docblock-short">Stores the user-defined parameters required to start the replica, that is:</div></li><li><div class="item-name"><a class="struct" href="struct.Replica.html" title="struct hotstuff_rs::replica::Replica">Replica</a></div><div class="desc docblock-short">A handle to the background threads of a HotStuff-rs replica. When this value is dropped, all
+background threads are gracefully shut down.</div></li><li><div class="item-name"><a class="struct" href="struct.ReplicaSpec.html" title="struct hotstuff_rs::replica::ReplicaSpec">ReplicaSpec</a></div><div class="desc docblock-short">Stores all necessary parameters and trait implementations required to run the <a href="struct.Replica.html" title="struct hotstuff_rs::replica::Replica">Replica</a>.</div></li></ul></section></div></main></body></html>

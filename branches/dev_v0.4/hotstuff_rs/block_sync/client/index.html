@@ -1,0 +1,70 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Implements the `BlockSyncClient`, which helps a replica catch up with the head of the blockchain by requesting blocks from the sync server of another replica."><title>hotstuff_rs::block_sync::client - Rust</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceSerif4-Regular-46f98efaafac5295.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/FiraSans-Regular-018c141bf0843ffd.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/FiraSans-Medium-8f9a781e4970d388.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2"><link rel="stylesheet" href="../../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../../static.files/rustdoc-5bc39a1768837dd0.css"><meta name="rustdoc-vars" data-root-path="../../../" data-static-root-path="../../../static.files/" data-current-crate="hotstuff_rs" data-themes="" data-resource-suffix="" data-rustdoc-version="1.77.2 (25ef9e3d8 2024-04-09)" data-channel="1.77.2" data-search-js="search-dd67cee4cfa65049.js" data-settings-js="settings-4313503d2e1961c2.js" ><script src="../../../static.files/storage-4c98445ec4002617.js"></script><script defer src="../sidebar-items.js"></script><script defer src="../../../static.files/main-48f368f3872407c8.js"></script><noscript><link rel="stylesheet" href="../../../static.files/noscript-04d5337699b92874.css"></noscript><link rel="alternate icon" type="image/png" href="../../../static.files/favicon-16x16-8b506e7a72182f1c.png"><link rel="alternate icon" type="image/png" href="../../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc mod"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle" title="show sidebar"></button></nav><nav class="sidebar"><div class="sidebar-crate"><h2><a href="../../../hotstuff_rs/index.html">hotstuff_rs</a><span class="version">0.4.0</span></h2></div><h2 class="location"><a href="#">Module client</a></h2><div class="sidebar-elems"><section><ul class="block"><li><a href="#structs">Structs</a></li><li><a href="#enums">Enums</a></li><li><a href="#functions">Functions</a></li></ul></section><h2><a href="../index.html">In hotstuff_rs::block_sync</a></h2></div></nav><div class="sidebar-resizer"></div>
+    <main><div class="width-limiter"><nav class="sub"><form class="search-form"><span></span><div id="sidebar-button" tabindex="-1"><a href="../../../hotstuff_rs/all.html" title="show sidebar"></a></div><input class="search-input" name="search" aria-label="Run search in the documentation" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" tabindex="-1"><a href="../../../help.html" title="help">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../static.files/wheel-7b819b6101059cd0.svg"></a></div></form></nav><section id="main-content" class="content"><div class="main-heading"><h1>Module <a href="../../index.html">hotstuff_rs</a>::<wbr><a href="../index.html">block_sync</a>::<wbr><a class="mod" href="#">client</a><button id="copy-path" title="Copy item path to clipboard"><img src="../../../static.files/clipboard-7571035ce49a181d.svg" width="19" height="18" alt="Copy item path"></button></h1><span class="out-of-band"><a class="src" href="../../../src/hotstuff_rs/block_sync/client.rs.html#6-636">source</a> · <button id="toggle-all-docs" title="collapse all docs">[<span>&#x2212;</span>]</button></span></div><details class="toggle top-doc" open><summary class="hideme"><span>Expand description</span></summary><div class="docblock"><p>Implements the <a href="struct.BlockSyncClient.html" title="struct hotstuff_rs::block_sync::client::BlockSyncClient"><code>BlockSyncClient</code></a>, which helps a replica catch up with the head of the blockchain
+by requesting blocks from the sync server of another replica.</p>
+<p>The client is responsible for:</p>
+<ol>
+<li>Triggering Block Sync when:
+<ol>
+<li>A replica has not made progress for a configurable amount of time.</li>
+<li>Or, sees evidence that others are ahead.</li>
+</ol>
+</li>
+<li>Managing the list of peers available as sync servers and a blacklist for sync servers that have
+provided incorrect information in the past.</li>
+<li>Selecting a peer to sync with from the list of available peers.</li>
+<li>Attempting to sync with a given peer.</li>
+</ol>
+<h3 id="triggering-block-sync"><a class="doc-anchor" href="#triggering-block-sync">§</a>Triggering Block Sync</h3>
+<p>HotStuff-rs replicas implement two complementary and configurable block sync trigger mechanisms:</p>
+<ol>
+<li>Event-based sync trigger: on receiving an <a href="../messages/struct.AdvertisePC.html" title="struct hotstuff_rs::block_sync::messages::AdvertisePC"><code>AdvertisePC</code></a> message with a correct PC from the
+future. By how many views the received PC must be ahead of the current view to trigger sync can
+be configured by setting <code>block_sync_trigger_min_view_difference</code> in the replica
+<a href="../../replica/struct.Configuration.html" title="struct hotstuff_rs::replica::Configuration">configuration</a>.</li>
+<li>Timeout-based sync trigger: when no “progress” is made for a sufficiently long time. Here
+“progress” is understood as updating the Highest PC stored in the <a href="../../state/block_tree/struct.BlockTree.html" title="struct hotstuff_rs::state::block_tree::BlockTree">block tree</a> - in the
+context of the HotStuff SMR, updating the Highest PC means that the validators are achieving
+consensus and extending the blockchain. The amount of time without progress or sync attempts
+required to trigger sync can be configured by setting <code>block_sync_trigger_timeout</code> in the replica
+configuration.</li>
+</ol>
+<p>The two sync trigger mechanims offer fallbacks for different liveness-threatening scenarios that a
+replica may face:</p>
+<ol>
+<li>The event-based sync trigger can help a replica catch up with the head of the blockchain in case
+there is a quorum of validators known to the replica making progress ahead, but the replica has
+fallen behind them in terms of view number.</li>
+<li>The timeout-based sync trigger can help a replica catch up in case there is either no quorum
+ahead (e.g., if others have also fallen out of sync with each other), or the validator set making
+progress ahead is unknown to the replica because it doesn’t know about the most recent validator
+set updates. Note that in the latter case, sync will only be succesful if some of the sync peers
+known to the replica are up-to-date with the head of the blockchain. Otherwise, a manual sync
+attempt may be required to recover from this situation.</li>
+</ol>
+<h3 id="block-sync-procedure"><a class="doc-anchor" href="#block-sync-procedure">§</a>Block Sync procedure</h3>
+<p>When sync is triggered, the sync client picks a random sync server from its list of available sync
+servers, and iteratively sends it sync requests and processes the received sync responses until
+the sync is terminated. Sync can be terminated if either:</p>
+<ol>
+<li>The sync client reaches timeout waiting for a response,</li>
+<li>The response contains incorrect blocks,</li>
+<li>The response contains no blocks.</li>
+</ol>
+<p>In the first two cases, the sync server may be blacklisted if the above-mentioned behaviour is
+inconsistent with the server’s promise to provide blocks up to a given height, as conveyed
+through its earlier <a href="../messages/struct.AdvertiseBlock.html" title="struct hotstuff_rs::block_sync::messages::AdvertiseBlock"><code>AdvertiseBlock</code></a> message.</p>
+<h3 id="available-sync-servers"><a class="doc-anchor" href="#available-sync-servers">§</a>Available sync servers</h3>
+<p>In general, available sync servers are current and potential validators that:</p>
+<ol>
+<li>Are “in sync” or ahead of the replica in terms of highest committed block height,</li>
+<li>Notify the replica’s sync client about their availability,</li>
+<li>Have not provided false information to the block sync client within a certain period of time
+specified by the blacklist expiry time. By “false information” we mean incorrect blocks or
+incorrect highest committed block height (used to determine 1).</li>
+</ol>
+<p>Keeping track of which peers can be considered available sync servers is done by maintaining a
+hashmap of available sync servers, and a queue of blacklisted sync servers together with their
+expiry times.</p>
+</div></details><h2 id="structs" class="section-header">Structs<a href="#structs" class="anchor">§</a></h2><ul class="item-table"><li><div class="item-name"><a class="struct" href="struct.BlockSyncClient.html" title="struct hotstuff_rs::block_sync::client::BlockSyncClient">BlockSyncClient</a><span title="Restricted Visibility">&nbsp;🔒</span> </div></li><li><div class="item-name"><a class="struct" href="struct.BlockSyncClientConfiguration.html" title="struct hotstuff_rs::block_sync::client::BlockSyncClientConfiguration">BlockSyncClientConfiguration</a><span title="Restricted Visibility">&nbsp;🔒</span> </div><div class="desc docblock-short">Configuration parameters that define the behaviour of the <a href="struct.BlockSyncClient.html" title="struct hotstuff_rs::block_sync::client::BlockSyncClient"><code>BlockSyncClient</code></a>. These should not
+change after the block sync client starts.</div></li><li><div class="item-name"><a class="struct" href="struct.BlockSyncClientState.html" title="struct hotstuff_rs::block_sync::client::BlockSyncClientState">BlockSyncClientState</a><span title="Restricted Visibility">&nbsp;🔒</span> </div></li></ul><h2 id="enums" class="section-header">Enums<a href="#enums" class="anchor">§</a></h2><ul class="item-table"><li><div class="item-name"><a class="enum" href="enum.BlockSyncClientError.html" title="enum hotstuff_rs::block_sync::client::BlockSyncClientError">BlockSyncClientError</a></div><div class="desc docblock-short">The block sync client may fail if there is an error when trying to read from or write to the
+<a href="../../state/block_tree/struct.BlockTree.html" title="struct hotstuff_rs::state::block_tree::BlockTree">block tree</a>.</div></li></ul><h2 id="functions" class="section-header">Functions<a href="#functions" class="anchor">§</a></h2><ul class="item-table"><li><div class="item-name"><a class="fn" href="fn.is_sync_server_address.html" title="fn hotstuff_rs::block_sync::client::is_sync_server_address">is_sync_server_address</a><span title="Restricted Visibility">&nbsp;🔒</span> </div><div class="desc docblock-short">Returns whether a given <a href="../../types/validator_set/struct.VerifyingKey.html" title="struct hotstuff_rs::types::validator_set::VerifyingKey">verifying key</a> is recognised as a valid sync server address.</div></li></ul></section></div></main></body></html>
