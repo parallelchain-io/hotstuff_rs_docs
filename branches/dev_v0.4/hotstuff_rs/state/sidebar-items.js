@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"mod":["app_block_tree_view","block_tree","block_tree_snapshot","invariants","kv_store","paths","write_batch"]};
