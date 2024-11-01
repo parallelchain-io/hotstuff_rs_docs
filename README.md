@@ -1,7 +1,7 @@
 # HotStuff-rs Rustdocs (private items documented)
 
 TODO.
-2.
+3.
 
 ## Purpose
 
