@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"fn":["is_phase_voter","is_proposer","is_validator","new_view_recipients","phase_vote_recipient"]};
