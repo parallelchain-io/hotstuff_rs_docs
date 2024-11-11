@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"struct":["BlockHeight","BufferSize","ChainID","ChildrenList","CryptoHash","Data","DataLen","Datum","EpochLength","Power","SignatureBytes","SignatureSet","TotalPower","ViewNumber"]};

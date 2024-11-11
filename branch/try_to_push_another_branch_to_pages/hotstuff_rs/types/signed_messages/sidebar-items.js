@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"struct":["ActiveCollectorPair"],"trait":["Certificate","Collector","SignedMessage","Vote"]};

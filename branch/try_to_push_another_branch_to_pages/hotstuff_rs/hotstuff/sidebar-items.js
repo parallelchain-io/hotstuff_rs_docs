@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"mod":["implementation","messages","roles","sequence_flow","types"]};
