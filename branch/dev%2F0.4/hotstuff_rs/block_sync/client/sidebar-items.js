@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"enum":["BlockSyncClientError"],"fn":["is_sync_server_address"],"struct":["BlockSyncClient","BlockSyncClientConfiguration","BlockSyncClientState"]};

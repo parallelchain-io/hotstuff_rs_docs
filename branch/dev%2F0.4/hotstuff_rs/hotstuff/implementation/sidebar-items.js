@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"enum":["HotStuffError","ProposalStatus"],"struct":["HotStuff","HotStuffConfiguration"]};

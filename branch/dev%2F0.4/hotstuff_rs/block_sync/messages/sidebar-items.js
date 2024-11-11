@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"enum":["BlockSyncAdvertiseMessage","BlockSyncMessage"],"struct":["AdvertiseBlock","AdvertisePC","BlockSyncRequest","BlockSyncResponse"]};
