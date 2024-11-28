@@ -11,7 +11,7 @@ two places:</p>
 <ol>
 <li>When a validator creates a <code>Nudge</code> using <a href="struct.Nudge.html#method.new" title="associated function hotstuff_rs::hotstuff::messages::Nudge::new"><code>new</code></a>.</li>
 <li>When a replica receives a <code>Nudge</code> and checks the
-<a href="../../state/invariants/fn.safe_nudge.html" title="fn hotstuff_rs::state::invariants::safe_nudge"><code>safe_nudge</code></a> predicate.</li>
+<a href="crate::state::invariants::safe_nudge"><code>safe_nudge</code></a> predicate.</li>
 </ol>
 </div></details><h2 id="fields" class="fields section-header">Fields<a href="#fields" class="anchor">§</a></h2><span id="structfield.chain_id" class="structfield section-header"><a href="#structfield.chain_id" class="anchor field">§</a><code>chain_id: <a class="struct" href="../../types/data_types/struct.ChainID.html" title="struct hotstuff_rs::types::data_types::ChainID">ChainID</a></code></span><div class="docblock"><p><code>ChainID</code> of the block tree that <code>justify.block</code> is part of.</p>
 </div><span id="structfield.view" class="structfield section-header"><a href="#structfield.view" class="anchor field">§</a><code>view: <a class="struct" href="../../types/data_types/struct.ViewNumber.html" title="struct hotstuff_rs::types::data_types::ViewNumber">ViewNumber</a></code></span><div class="docblock"><p>Current <code>ViewNumber</code> of the <a href="../roles/fn.is_proposer.html" title="fn hotstuff_rs::hotstuff::roles::is_proposer">proposer</a> that created this

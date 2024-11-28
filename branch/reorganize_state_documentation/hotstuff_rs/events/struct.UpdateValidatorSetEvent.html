@@ -2,7 +2,7 @@
     pub timestamp: <a class="struct" href="https://doc.rust-lang.org/1.82.0/std/time/struct.SystemTime.html" title="struct std::time::SystemTime">SystemTime</a>,
     pub cause_block: <a class="struct" href="../types/data_types/struct.CryptoHash.html" title="struct hotstuff_rs::types::data_types::CryptoHash">CryptoHash</a>,
     pub validator_set_updates: <a class="type" href="../types/update_sets/type.ValidatorSetUpdates.html" title="type hotstuff_rs::types::update_sets::ValidatorSetUpdates">ValidatorSetUpdates</a>,
-}</code></pre><details class="toggle top-doc" open><summary class="hideme"><span>Expand description</span></summary><div class="docblock"><p>The committed validator set, stored in the <a href="../state/block_tree/struct.BlockTree.html" title="struct hotstuff_rs::state::block_tree::BlockTree">Block Tree</a>, was updated.
+}</code></pre><details class="toggle top-doc" open><summary class="hideme"><span>Expand description</span></summary><div class="docblock"><p>The committed validator set, stored in the <a href="crate::state::block_tree::BlockTree">Block Tree</a>, was updated.
 Includes the <a href="../types/data_types/struct.CryptoHash.html" title="struct hotstuff_rs::types::data_types::CryptoHash">hash</a> of the block with which the updates are
 associated, and the information about the
 <a href="../types/update_sets/type.ValidatorSetUpdates.html" title="type hotstuff_rs::types::update_sets::ValidatorSetUpdates">validator set updates</a>, i.e., the insertions and

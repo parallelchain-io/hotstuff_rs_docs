@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"mod":["algorithm","app","block_sync","event_bus","events","hotstuff","logging","networking","pacemaker","replica","state","types"]};
+window.SIDEBAR_ITEMS = {"mod":["algorithm","app","block_sync","block_tree","event_bus","events","hotstuff","logging","networking","pacemaker","replica","types"]};

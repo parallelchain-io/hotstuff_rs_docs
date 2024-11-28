@@ -178,11 +178,11 @@
 <span class="kw">use </span>ed25519_dalek::Verifier;
 
 <span class="kw">use crate</span>::{
-    pacemaker::messages::TimeoutVote,
-    state::{
-        block_tree::{BlockTree, BlockTreeError},
-        kv_store::KVStore,
+    block_tree::{
+        accessors::internal::{BlockTree, BlockTreeError},
+        pluggables::KVStore,
     },
+    pacemaker::messages::TimeoutVote,
     types::{
         data_types::<span class="kw-2">*</span>,
         signed_messages::{Certificate, Collector},

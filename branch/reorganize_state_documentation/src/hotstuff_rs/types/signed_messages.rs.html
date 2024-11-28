@@ -358,9 +358,9 @@
 //! collecting votes for different "active" validator sets into a single struct and wraps interactions
 //! with them inside a single interface, which simplifies usage.
 
-</span><span class="kw">use </span><span class="kw">crate</span>::state::{
-    block_tree::{BlockTree, BlockTreeError},
-    kv_store::KVStore,
+</span><span class="kw">use </span><span class="kw">crate</span>::block_tree::{
+    accessors::internal::{BlockTree, BlockTreeError},
+    pluggables::KVStore,
 };
 
 <span class="kw">use super</span>::{

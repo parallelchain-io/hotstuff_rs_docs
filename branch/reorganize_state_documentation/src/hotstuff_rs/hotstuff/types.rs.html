@@ -403,9 +403,9 @@
 
 <span class="kw">use </span><span class="kw">super</span>::messages::PhaseVote;
 <span class="kw">use crate</span>::{
-    state::{
-        block_tree::{BlockTree, BlockTreeError},
-        kv_store::KVStore,
+    block_tree::{
+        accessors::internal::{BlockTree, BlockTreeError},
+        pluggables::KVStore,
     },
     types::{
         data_types::<span class="kw-2">*</span>,

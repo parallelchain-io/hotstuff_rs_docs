@@ -4,7 +4,7 @@
     Committed,
 }</code></pre><details class="toggle top-doc" open><summary class="hideme"><span>Expand description</span></summary><div class="docblock"><p>Wraps around <a href="../update_sets/type.ValidatorSetUpdates.html" title="type hotstuff_rs::types::update_sets::ValidatorSetUpdates"><code>ValidatorSetUpdates</code></a>, providing additional information on whether the updates have
 already been applied or not.</p>
-<p>The <a href="../../state/block_tree/index.html#validator-set" title="mod hotstuff_rs::state::block_tree">“Validator Set Updates Status” state variable</a> in the
+<p>The <a href="crate::state::block_tree#validator-set">“Validator Set Updates Status” state variable</a> in the
 <code>BlockTree</code> stores a mapping from blocks to their associated <code>ValidatorSetUpdatesStatus</code>.</p>
 </div></details><h2 id="variants" class="variants section-header">Variants<a href="#variants" class="anchor">§</a></h2><div class="variants"><section id="variant.None" class="variant"><a href="#variant.None" class="anchor">§</a><h3 class="code-header">None</h3></section><div class="docblock"><p>The block does not update the validator set.</p>
 </div><section id="variant.Pending" class="variant"><a href="#variant.Pending" class="anchor">§</a><h3 class="code-header">Pending(<a class="type" href="../update_sets/type.ValidatorSetUpdates.html" title="type hotstuff_rs::types::update_sets::ValidatorSetUpdates">ValidatorSetUpdates</a>)</h3></section><div class="docblock"><p>The block’s validator set updates have not been applied to the committed validator set yet.</p>
