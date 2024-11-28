@@ -1,0 +1,94 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="A Rust Programming Language library for Byzantine Fault Tolerant (BFT) State Machine Replication (SMR), intended for production systems."><title>hotstuff_rs - Rust</title><script>if(window.location.protocol!=="file:")document.head.insertAdjacentHTML("beforeend","SourceSerif4-Regular-46f98efaafac5295.ttf.woff2,FiraSans-Regular-018c141bf0843ffd.woff2,FiraSans-Medium-8f9a781e4970d388.woff2,SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2,SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2".split(",").map(f=>`<link rel="preload" as="font" type="font/woff2" crossorigin href="../static.files/${f}">`).join(""))</script><link rel="stylesheet" href="../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../static.files/rustdoc-b0742ba02757f159.css"><meta name="rustdoc-vars" data-root-path="../" data-static-root-path="../static.files/" data-current-crate="hotstuff_rs" data-themes="" data-resource-suffix="" data-rustdoc-version="1.83.0 (90b35a623 2024-11-26)" data-channel="1.83.0" data-search-js="search-f0d225181b97f9a4.js" data-settings-js="settings-805db61a62df4bd2.js" ><script src="../static.files/storage-1d39b6787ed640ff.js"></script><script defer src="../crates.js"></script><script defer src="../static.files/main-f070b9041d14864c.js"></script><noscript><link rel="stylesheet" href="../static.files/noscript-0111fcff984fae8f.css"></noscript><link rel="alternate icon" type="image/png" href="../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc mod crate"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle" title="show sidebar"></button></nav><nav class="sidebar"><div class="sidebar-crate"><h2><a href="../hotstuff_rs/index.html">hotstuff_<wbr>rs</a><span class="version">0.4.0</span></h2></div><div class="sidebar-elems"><ul class="block"><li><a id="all-types" href="all.html">All Items</a></li></ul><section id="rustdoc-toc"><h3><a href="#">Sections</a></h3><ul class="block top-toc"><li><a href="#features" title="Features">Features</a></li><li><a href="#getting-started" title="Getting started">Getting started</a></li><li><a href="#understanding-hotstuff-rs" title="Understanding HotStuff-rs">Understanding HotStuff-rs</a><ul><li><a href="#concepts" title="Concepts">Concepts</a></li><li><a href="#module-organization" title="Module organization">Module organization</a></li></ul></li></ul><h3><a href="#modules">Crate Items</a></h3><ul class="block"><li><a href="#modules" title="Modules">Modules</a></li></ul></section><div id="rustdoc-modnav"></div></div></nav><div class="sidebar-resizer"></div><main><div class="width-limiter"><rustdoc-search></rustdoc-search><section id="main-content" class="content"><div class="main-heading"><h1>Crate <span>hotstuff_rs</span><button id="copy-path" title="Copy item path to clipboard">Copy item path</button></h1><rustdoc-toolbar></rustdoc-toolbar><span class="sub-heading"><a class="src" href="../src/hotstuff_rs/lib.rs.html#6-142">source</a> </span></div><details class="toggle top-doc" open><summary class="hideme"><span>Expand description</span></summary><div class="docblock"><p>A Rust Programming Language library for Byzantine Fault Tolerant (BFT) State Machine Replication
+(SMR), intended for production systems.</p>
+<h2 id="features"><a class="doc-anchor" href="#features">§</a>Features</h2>
+<ul>
+<li><strong>Pluggable components</strong>: library users get to provide their own business logic
+(<a href="app/index.html" title="mod hotstuff_rs::app"><code>app</code></a>), key-value storage (<a href="block_tree/pluggables/trait.KVStore.html" title="trait hotstuff_rs::block_tree::pluggables::KVStore"><code>kv_store</code></a>), and peer-to-peer
+networking (<a href="networking/network/index.html" title="mod hotstuff_rs::networking::network"><code>network</code></a>). HotStuff-rs is agnostic to these details and
+can therefore be adapted to many use-cases.</li>
+<li><strong>Dynamic validator sets</strong>: <code>App</code>s can control and change the set of replicas (“validators”) that
+vote to replicate the state machine without any downtime or manual configuration. Unlike older
+generations of SMR, “validator set updates” are not stop-the-world operations.</li>
+<li><strong>View synchronization</strong>: HotStuff-rs implements Byzantine View Synchronization in the <a href="pacemaker/index.html" title="mod hotstuff_rs::pacemaker"><code>pacemaker</code></a>
+module. This enables it to quickly bring replicas’ view number in sync and therefore recover quickly
+from a network disruption.</li>
+<li><strong>Rigorous specification</strong>: HotStuff-rs is not only rigorously specified, but its specification is
+integrated into its Rustdocs so that they remain up-to-date with the implementation. This includes
+proofs of correctness for each of its subprotocols.</li>
+</ul>
+<h2 id="getting-started"><a class="doc-anchor" href="#getting-started">§</a>Getting started</h2>
+<p>To replicate your application using HotStuff-rs, you need to represent it as a type and then
+have the type implement the <a href="app/index.html" title="mod hotstuff_rs::app"><code>App</code></a> trait.</p>
+<p>Then, <a href="replica/struct.Replica.html#method.initialize" title="associated function hotstuff_rs::replica::Replica::initialize"><code>initialize</code></a> the replica’s storage,
+<a href="replica/struct.ReplicaSpec.html#method.builder" title="associated function hotstuff_rs::replica::ReplicaSpec::builder"><code>build</code></a> a <code>ReplicaSpec</code>,
+and then <a href="replica/struct.ReplicaSpec.html#method.start" title="method hotstuff_rs::replica::ReplicaSpec::start"><code>start</code></a> the replica.</p>
+<p>An example on <a href="replica/index.html#starting-a-replica" title="mod hotstuff_rs::replica">how to start a replica</a> can be found in the rustdocs for
+the <code>replica</code> module.</p>
+<h2 id="understanding-hotstuff-rs"><a class="doc-anchor" href="#understanding-hotstuff-rs">§</a>Understanding HotStuff-rs</h2>
+<p>The best way to understand HotStuff-rs is by reading these Rustdocs (so be happy, you are already at
+the right place!).</p>
+<p>HotStuff-rs’ Rustdocs are designed to be both <strong>documentation</strong>, and <strong>specification</strong>. This means
+that it does not only <em>describe</em> the current (v0.4.0) version of this (Rust) implementation of
+HotStuff-rs, but also <em>prescribes</em> a protocol that developers can use to implement BFT SMR libraries
+that are compatible with HotStuff-rs.</p>
+<p>Before starting to read these Rustdocs, it is helpful to have a good high-level awareness of the
+concepts behind HotStuff-rs, as well as a high-level picture of how the library’s modules are
+organized.</p>
+<p>The <a href="#concepts">Concepts</a> subsection helps with the former by introducing a slew of the important
+concepts in a way gives a sense of the relationships between them, as well as linking to further
+reading resources whenever they are available, while the <a href="#organization">Organization</a> subsection
+helps with the latter by briefly describing how the module tree is structured.</p>
+<h3 id="concepts"><a class="doc-anchor" href="#concepts">§</a>Concepts</h3>
+<p>The library user implements their business logic in an <a href="app/index.html" title="mod hotstuff_rs::app"><code>App</code></a> and provides a handle to it
+to HotStuff-rs via the <code>app</code> setter on <a href="replica/struct.ReplicaSpec.html#method.builder" title="associated function hotstuff_rs::replica::ReplicaSpec::builder"><code>ReplicaSpecBuilder</code></a>. The
+library user then <a href="replica/struct.ReplicaSpec.html#method.start" title="method hotstuff_rs::replica::ReplicaSpec::start"><code>start</code></a>s a replica.</p>
+<p>Upon startup, the replica starts a background thread called the <a href="algorithm/index.html" title="mod hotstuff_rs::algorithm"><code>algorithm</code></a> thread. The algorithm
+thread then creates instances of HotStuff-rs’ three subprotocols–namely <a href="hotstuff/index.html" title="mod hotstuff_rs::hotstuff"><code>hotstuff</code></a>,
+<a href="pacemaker/index.html" title="mod hotstuff_rs::pacemaker"><code>pacemaker</code></a>, and <a href="block_sync/index.html" title="mod hotstuff_rs::block_sync"><code>block_sync</code></a>–and starts to poll these instances in an infinite loop, driving
+each subprotocol forward.</p>
+<p>The Pacemaker subprotocol works to keep track of an increasing counter called the “view number”,
+which is a sort of logical clock that the algorithm thread uses to decide the replica should do at
+any moment in time. At any given view, a replica could either be a
+<a href="replica/index.html#kinds-of-replicas" title="mod hotstuff_rs::replica">validator, or a listener</a>. Suppose that it is a validator. Then, it
+needs to play a <a href="hotstuff/roles/index.html" title="mod hotstuff_rs::hotstuff::roles">role</a> in the HotStuff subpprotocol.</p>
+<p>The two main roles validator can play in the HotStuff subprotocol are:
+<a href="hotstuff/roles/fn.is_proposer.html" title="fn hotstuff_rs::hotstuff::roles::is_proposer">Proposer</a>, and <a href="hotstuff/roles/fn.is_phase_voter.html" title="fn hotstuff_rs::hotstuff::roles::is_phase_voter">Phase-Voter</a>. These
+two roles are not mutually exclusive. For example, it could be that in a given view, a  validator
+is both a proposer, and a phase-voter.</p>
+<p>Suppose that a validator is a proposer. Then, it will begin the view by calling
+<a href="app/trait.App.html#tymethod.produce_block" title="method hotstuff_rs::app::App::produce_block"><code>produce_block</code></a> to ask the <code>App</code> to generate the contents of a new
+<a href="types/block/struct.Block.html" title="struct hotstuff_rs::types::block::Block"><code>Block</code></a>. Then, it will pack the block in a
+<a href="hotstuff/messages/struct.Proposal.html" title="struct hotstuff_rs::hotstuff::messages::Proposal"><code>Proposal</code></a> and broadcast this to all other replicas through the
+user-provided P2P <a href="networking/network/index.html" title="mod hotstuff_rs::networking::network"><code>Network</code></a>.</p>
+<p>Suppose further that the validator is also phase-voter. Then, after broadcasting the proposal, the
+validator will wait to receive a proposal from the <code>Network</code>. Upon receiving a <code>Proposal</code> (which
+could be the same <code>Proposal</code> it just itself proposed), it will call
+<a href="app/trait.App.html#tymethod.validate_block" title="method hotstuff_rs::app::App::validate_block"><code>validate_block</code></a> to ask the <code>App</code> to ask it to validate the block
+according to user-defined application-level semantics.</p>
+<p>If the block is valid, then the replica will create a <a href="hotstuff/messages/struct.PhaseVote.html" title="struct hotstuff_rs::hotstuff::messages::PhaseVote"><code>PhaseVote</code></a>
+by signing a message with its  <a href="types/validator_set/struct.SigningKey.html" title="struct hotstuff_rs::types::validator_set::SigningKey"><code>SigningKey</code></a>, and send this
+to the <a href="hotstuff/roles/fn.phase_vote_recipient.html" title="fn hotstuff_rs::hotstuff::roles::phase_vote_recipient"><code>phase_vote_recipient</code></a>. Then, it will insert the
+block to its <a href="block_tree/index.html" title="mod hotstuff_rs::block_tree">Block Tree</a>, which the library stores in the
+<a href="block_tree/pluggables/trait.KVStore.html" title="trait hotstuff_rs::block_tree::pluggables::KVStore"><code>KVStore</code></a> provided by the user.</p>
+<p>The overall result is an immutable “block chain” that is guaranteed to satisfy safety and liveness
+<a href="block_tree/invariants/index.html" title="mod hotstuff_rs::block_tree::invariants"><code>invariants</code></a> as long as no more than 1/3rd of the
+<a href="types/data_types/struct.TotalPower.html" title="struct hotstuff_rs::types::data_types::TotalPower"><code>TotalPower</code></a> of a
+<a href="types/validator_set/struct.ValidatorSet.html" title="struct hotstuff_rs::types::validator_set::ValidatorSet"><code>ValidatorSet</code></a> is faulty.</p>
+<p>As all of this is happening, the algorithm constantly emits <a href="events/index.html" title="mod hotstuff_rs::events"><code>events</code></a>, which user code can receive
+as they occur by registering event handlers.</p>
+<h3 id="module-organization"><a class="doc-anchor" href="#module-organization">§</a>Module organization</h3>
+<p>HotStuff-rs’ modules are organized into two levels depending on whether the definitions they contain
+are <strong>subprotocol</strong>-specific, or commonly used across multiple subprotocols.</p>
+<p>The three subprotocols of HotStuff-rs and their associated modules are:</p>
+<ol>
+<li><strong>HotStuff</strong> (<a href="hotstuff/index.html" title="mod hotstuff_rs::hotstuff"><code>hotstuff</code></a>): the subprotocol for committing blocks.</li>
+<li><strong>Pacemaker</strong> (<a href="pacemaker/index.html" title="mod hotstuff_rs::pacemaker"><code>pacemaker</code></a>): the subprotocol for bringing replicas into the same view so that they
+can start committing blocks.</li>
+<li><strong>Block Sync</strong> (<a href="block_sync/index.html" title="mod hotstuff_rs::block_sync"><code>block_sync</code></a>): the subprotocol for bringing replicas’ block trees up-to-date after
+periods of time in which they miss messages.</li>
+</ol>
+<p>Modules not listed above not subprotocol-specific.</p>
+</div></details><h2 id="modules" class="section-header">Modules<a href="#modules" class="anchor">§</a></h2><ul class="item-table"><li><div class="item-name"><a class="mod" href="algorithm/index.html" title="mod hotstuff_rs::algorithm">algorithm</a><span title="Restricted Visibility">&nbsp;🔒</span> </div><div class="desc docblock-short">Thread that drives the event-driven implementations of the <a href="hotstuff/index.html" title="mod hotstuff_rs::hotstuff">HotStuff</a>,
+<a href="pacemaker/index.html" title="mod hotstuff_rs::pacemaker">Pacemaker</a>, and <a href="block_sync/index.html" title="mod hotstuff_rs::block_sync">BlockSync</a> subprotocols.</div></li><li><div class="item-name"><a class="mod" href="app/index.html" title="mod hotstuff_rs::app">app</a></div><div class="desc docblock-short">Pluggable, replicable applications.</div></li><li><div class="item-name"><a class="mod" href="block_sync/index.html" title="mod hotstuff_rs::block_sync">block_<wbr>sync</a></div><div class="desc docblock-short">Subprotocol that “catches-up” the local block tree in case the replica misses out on messages.</div></li><li><div class="item-name"><a class="mod" href="block_tree/index.html" title="mod hotstuff_rs::block_tree">block_<wbr>tree</a></div><div class="desc docblock-short">The persistent state of a replica.</div></li><li><div class="item-name"><a class="mod" href="event_bus/index.html" title="mod hotstuff_rs::event_bus">event_<wbr>bus</a><span title="Restricted Visibility">&nbsp;🔒</span> </div><div class="desc docblock-short">Thread that receives events emitted by the <a href="algorithm/index.html" title="mod hotstuff_rs::algorithm">algorithm</a> and
+<a href="block_sync/server/struct.BlockSyncServer.html" title="struct hotstuff_rs::block_sync::server::BlockSyncServer">block sync server</a> threads and passes them to event
+handlers.</div></li><li><div class="item-name"><a class="mod" href="events/index.html" title="mod hotstuff_rs::events">events</a></div><div class="desc docblock-short">Subscribable events that are published when significant things happen in the replica.</div></li><li><div class="item-name"><a class="mod" href="hotstuff/index.html" title="mod hotstuff_rs::hotstuff">hotstuff</a></div><div class="desc docblock-short">Subprotocol for committing <code>Block</code>s.</div></li><li><div class="item-name"><a class="mod" href="logging/index.html" title="mod hotstuff_rs::logging">logging</a></div><div class="desc docblock-short">Functions that log out events.</div></li><li><div class="item-name"><a class="mod" href="networking/index.html" title="mod hotstuff_rs::networking">networking</a></div><div class="desc docblock-short">Pluggable peer-to-peer (P2P) networking.</div></li><li><div class="item-name"><a class="mod" href="pacemaker/index.html" title="mod hotstuff_rs::pacemaker">pacemaker</a></div><div class="desc docblock-short">Subprotocol for synchronizing view numbers.</div></li><li><div class="item-name"><a class="mod" href="replica/index.html" title="mod hotstuff_rs::replica">replica</a></div><div class="desc docblock-short">Methods for building and running a replica as well as initializing its storage.</div></li><li><div class="item-name"><a class="mod" href="types/index.html" title="mod hotstuff_rs::types">types</a></div><div class="desc docblock-short">Types and traits that are used across multiple sub-protocols or components of HotStuff-rs.</div></li></ul></section></div></main></body></html>

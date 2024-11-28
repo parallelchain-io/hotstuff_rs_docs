@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":["ExtendViewError","PacemakerError","UpdateViewError"],"fn":["epoch","is_epoch_change_view","select_leader"],"struct":["Pacemaker","PacemakerConfiguration","PacemakerState","ViewInfo"]};

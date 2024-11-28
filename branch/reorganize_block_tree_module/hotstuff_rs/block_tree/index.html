@@ -1,0 +1,47 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="The persistent state of a replica."><title>hotstuff_rs::block_tree - Rust</title><script>if(window.location.protocol!=="file:")document.head.insertAdjacentHTML("beforeend","SourceSerif4-Regular-46f98efaafac5295.ttf.woff2,FiraSans-Regular-018c141bf0843ffd.woff2,FiraSans-Medium-8f9a781e4970d388.woff2,SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2,SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2".split(",").map(f=>`<link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/${f}">`).join(""))</script><link rel="stylesheet" href="../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../static.files/rustdoc-b0742ba02757f159.css"><meta name="rustdoc-vars" data-root-path="../../" data-static-root-path="../../static.files/" data-current-crate="hotstuff_rs" data-themes="" data-resource-suffix="" data-rustdoc-version="1.83.0 (90b35a623 2024-11-26)" data-channel="1.83.0" data-search-js="search-f0d225181b97f9a4.js" data-settings-js="settings-805db61a62df4bd2.js" ><script src="../../static.files/storage-1d39b6787ed640ff.js"></script><script defer src="../sidebar-items.js"></script><script defer src="../../static.files/main-f070b9041d14864c.js"></script><noscript><link rel="stylesheet" href="../../static.files/noscript-0111fcff984fae8f.css"></noscript><link rel="alternate icon" type="image/png" href="../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc mod"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle" title="show sidebar"></button></nav><nav class="sidebar"><div class="sidebar-crate"><h2><a href="../../hotstuff_rs/index.html">hotstuff_<wbr>rs</a><span class="version">0.4.0</span></h2></div><div class="sidebar-elems"><section id="rustdoc-toc"><h2 class="location"><a href="#">Module block_<wbr>tree</a></h2><h3><a href="#">Sections</a></h3><ul class="block top-toc"><li><a href="#block-tree" title="Block Tree">Block Tree</a></li><li><a href="#besides-the-block-tree" title="Besides the Block Tree">Besides the Block Tree</a></li><li><a href="#pluggable-persistence" title="Pluggable persistence">Pluggable persistence</a></li><li><a href="#accessing-the-block-tree" title="Accessing the Block Tree">Accessing the Block Tree</a></li></ul><h3><a href="#modules">Module Items</a></h3><ul class="block"><li><a href="#modules" title="Modules">Modules</a></li></ul></section><div id="rustdoc-modnav"><h2 class="in-crate"><a href="../index.html">In crate hotstuff_<wbr>rs</a></h2></div></div></nav><div class="sidebar-resizer"></div><main><div class="width-limiter"><rustdoc-search></rustdoc-search><section id="main-content" class="content"><div class="main-heading"><span class="rustdoc-breadcrumbs"><a href="../index.html">hotstuff_rs</a></span><h1>Module <span>block_tree</span><button id="copy-path" title="Copy item path to clipboard">Copy item path</button></h1><rustdoc-toolbar></rustdoc-toolbar><span class="sub-heading"><a class="src" href="../../src/hotstuff_rs/block_tree/mod.rs.html#1-55">source</a> </span></div><details class="toggle top-doc" open><summary class="hideme"><span>Expand description</span></summary><div class="docblock"><p>The persistent state of a replica.</p>
+<h2 id="block-tree"><a class="doc-anchor" href="#block-tree">§</a>Block Tree</h2>
+<p>The Block Tree is the fundamental persistent data structure in HotStuff-rs, the HotStuff
+subprotocol, and “Chain-Based” state machine replication in general.</p>
+<p>A block tree is a directed acyclic graph (or “Tree”) of Blocks rooted at a starting block called
+the “Genesis Block”. As far as trees go, block trees are “narrow”, in that most blocks in a block
+tree will only have one edge coming into it. Specifically, all blocks in a block tree “under” a
+highest committed block (i.e., closer to genesis block to than the highest committed block) will
+only have one edge coming out of it.</p>
+<p>Because of this, a block tree can be understood as being a linked list with a tree attached to it
+at the highest committed block. In this understanding, there are <strong>two kinds of blocks</strong> in a block
+tree:</p>
+<ul>
+<li><strong>Committed Blocks</strong>: blocks in the linked list. These are permanently part of the block tree.</li>
+<li><strong>Speculative Blocks</strong>: blocks in the tree. These, along with their descendants, are “pruned”
+when a “conflicting” block is committed.</li>
+</ul>
+<p>A speculative block is committed when a 3-Chain is formed extending it. This is the point at which
+the HotStuff subprotocol can guarantee that a block that conflicts with the block can never be
+committed and that therefore, the block is now permanently part of the block tree. The logic that
+makes this guarantee sound is implemented in <a href="invariants/index.html" title="mod hotstuff_rs::block_tree::invariants"><code>invariants</code></a>.</p>
+<h2 id="besides-the-block-tree"><a class="doc-anchor" href="#besides-the-block-tree">§</a>Besides the Block Tree</h2>
+<ul>
+<li>The block tree is maintained by the types in this module.</li>
+<li>But the types in this module maintain not just strictly the block tree data structure (even though they’re called blocktreesomething or whatever).</li>
+<li>They also store additional data that ultimately keep the growth of the block tree safe (related to invariants)..</li>
+<li>The complete list of everything can be found in (link to variables).</li>
+</ul>
+<h2 id="pluggable-persistence"><a class="doc-anchor" href="#pluggable-persistence">§</a>Pluggable persistence</h2>
+<ul>
+<li>The block tree is kept in persistent storage, most probably in the host’s filesystem.</li>
+<li>Library users get to choose how exactly this is done.</li>
+<li>HotStuff-rs merely requires that whatever the user provides as a persistence mechanism implements the abstract functionality of
+a key-value store with atomic, batched writes.</li>
+<li>This abstract functionality is made concrete by the traits defined in the <code>pluggables</code> module.</li>
+<li>Implement this for whatever persistence mechanism you want and pass in the type to the constructor in <code>mod replica</code>.</li>
+</ul>
+<h2 id="accessing-the-block-tree"><a class="doc-anchor" href="#accessing-the-block-tree">§</a>Accessing the Block Tree</h2>
+<ul>
+<li>The provided implementations of the pluggable persistence traits then get wrapped inside block tree <code>accessors</code>.</li>
+<li>Implementations of the pluggable persistence traits then get wrapped inside block tree <code>accessors</code>.</li>
+<li>These put the block tree++ variables in the right places in the KVStore and provide methods for reading and writing them both
+from code internal to this library and in user code.</li>
+</ul>
+</div></details><h2 id="modules" class="section-header">Modules<a href="#modules" class="anchor">§</a></h2><ul class="item-table"><li><div class="item-name"><a class="mod" href="accessors/index.html" title="mod hotstuff_rs::block_tree::accessors">accessors</a></div></li><li><div class="item-name"><a class="mod" href="invariants/index.html" title="mod hotstuff_rs::block_tree::invariants">invariants</a></div><div class="desc docblock-short">Rules and predicates that help with maintaining the invariant properties of the Block Tree data
+structure.</div></li><li><div class="item-name"><a class="mod" href="pluggables/index.html" title="mod hotstuff_rs::block_tree::pluggables">pluggables</a></div><div class="desc docblock-short">Traits for pluggable Block Tree persistence.</div></li><li><div class="item-name"><a class="mod" href="variables/index.html" title="mod hotstuff_rs::block_tree::variables">variables</a></div><div class="desc docblock-short">Byte-prefixes that specify where each Block Tree variable is stored in the user-provided key-value
+store.</div></li></ul></section></div></main></body></html>

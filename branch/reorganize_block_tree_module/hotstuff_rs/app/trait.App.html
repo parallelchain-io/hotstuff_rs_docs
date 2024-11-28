@@ -1,0 +1,121 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Trait implemented by applications that are to be replicated by HotStuff-rs."><title>App in hotstuff_rs::app - Rust</title><script>if(window.location.protocol!=="file:")document.head.insertAdjacentHTML("beforeend","SourceSerif4-Regular-46f98efaafac5295.ttf.woff2,FiraSans-Regular-018c141bf0843ffd.woff2,FiraSans-Medium-8f9a781e4970d388.woff2,SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2,SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2".split(",").map(f=>`<link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/${f}">`).join(""))</script><link rel="stylesheet" href="../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../static.files/rustdoc-b0742ba02757f159.css"><meta name="rustdoc-vars" data-root-path="../../" data-static-root-path="../../static.files/" data-current-crate="hotstuff_rs" data-themes="" data-resource-suffix="" data-rustdoc-version="1.83.0 (90b35a623 2024-11-26)" data-channel="1.83.0" data-search-js="search-f0d225181b97f9a4.js" data-settings-js="settings-805db61a62df4bd2.js" ><script src="../../static.files/storage-1d39b6787ed640ff.js"></script><script defer src="sidebar-items.js"></script><script defer src="../../static.files/main-f070b9041d14864c.js"></script><noscript><link rel="stylesheet" href="../../static.files/noscript-0111fcff984fae8f.css"></noscript><link rel="alternate icon" type="image/png" href="../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc trait"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle" title="show sidebar"></button></nav><nav class="sidebar"><div class="sidebar-crate"><h2><a href="../../hotstuff_rs/index.html">hotstuff_<wbr>rs</a><span class="version">0.4.0</span></h2></div><div class="sidebar-elems"><section id="rustdoc-toc"><h2 class="location"><a href="#">App</a></h2><h3><a href="#">Sections</a></h3><ul class="block top-toc"><li><a href="#determinism-requirements" title="Determinism requirements">Determinism requirements</a></li><li><a href="#timing-requirements" title="Timing requirements">Timing requirements</a><ul><li><a href="#rationale-behind-timing-requirements" title="Rationale behind timing requirements">Rationale behind timing requirements</a></li></ul></li></ul><h3><a href="#required-methods">Required Methods</a></h3><ul class="block"><li><a href="#tymethod.produce_block" title="produce_block">produce_block</a></li><li><a href="#tymethod.validate_block" title="validate_block">validate_block</a></li><li><a href="#tymethod.validate_block_for_sync" title="validate_block_for_sync">validate_block_for_sync</a></li></ul><h3><a href="#implementors">Implementors</a></h3></section><div id="rustdoc-modnav"><h2><a href="index.html">In hotstuff_<wbr>rs::<wbr>app</a></h2></div></div></nav><div class="sidebar-resizer"></div><main><div class="width-limiter"><rustdoc-search></rustdoc-search><section id="main-content" class="content"><div class="main-heading"><span class="rustdoc-breadcrumbs"><a href="../index.html">hotstuff_rs</a>::<wbr><a href="index.html">app</a></span><h1>Trait <span class="trait">App</span><button id="copy-path" title="Copy item path to clipboard">Copy item path</button></h1><rustdoc-toolbar></rustdoc-toolbar><span class="sub-heading"><a class="src" href="../../src/hotstuff_rs/app.rs.html#140-179">source</a> </span></div><pre class="rust item-decl"><code>pub trait App&lt;K: <a class="trait" href="../block_tree/pluggables/trait.KVStore.html" title="trait hotstuff_rs::block_tree::pluggables::KVStore">KVStore</a>&gt;: <a class="trait" href="https://doc.rust-lang.org/1.83.0/core/marker/trait.Send.html" title="trait core::marker::Send">Send</a> {
+    // Required methods
+    fn <a href="#tymethod.produce_block" class="fn">produce_block</a>(
+        &amp;mut self,
+        request: <a class="struct" href="struct.ProduceBlockRequest.html" title="struct hotstuff_rs::app::ProduceBlockRequest">ProduceBlockRequest</a>&lt;'_, K&gt;,
+    ) -&gt; <a class="struct" href="struct.ProduceBlockResponse.html" title="struct hotstuff_rs::app::ProduceBlockResponse">ProduceBlockResponse</a>;
+<span class="item-spacer"></span>    fn <a href="#tymethod.validate_block" class="fn">validate_block</a>(
+        &amp;mut self,
+        request: <a class="struct" href="struct.ValidateBlockRequest.html" title="struct hotstuff_rs::app::ValidateBlockRequest">ValidateBlockRequest</a>&lt;'_, '_, K&gt;,
+    ) -&gt; <a class="enum" href="enum.ValidateBlockResponse.html" title="enum hotstuff_rs::app::ValidateBlockResponse">ValidateBlockResponse</a>;
+<span class="item-spacer"></span>    fn <a href="#tymethod.validate_block_for_sync" class="fn">validate_block_for_sync</a>(
+        &amp;mut self,
+        request: <a class="struct" href="struct.ValidateBlockRequest.html" title="struct hotstuff_rs::app::ValidateBlockRequest">ValidateBlockRequest</a>&lt;'_, '_, K&gt;,
+    ) -&gt; <a class="enum" href="enum.ValidateBlockResponse.html" title="enum hotstuff_rs::app::ValidateBlockResponse">ValidateBlockResponse</a>;
+}</code></pre><details class="toggle top-doc" open><summary class="hideme"><span>Expand description</span></summary><div class="docblock"><p>Trait implemented by applications that are to be replicated by HotStuff-rs.</p>
+<h2 id="determinism-requirements"><a class="doc-anchor" href="#determinism-requirements">§</a>Determinism requirements</h2>
+<p>In order for the state machine to be correctly replicated across all replicas, types that implement
+<code>App</code> must ensure that their implementations of <code>produce_block</code>, <code>validate_block</code>, and
+<code>validate_block_for_sync</code> are deterministic. That is, for any particular request (e.g.,
+<a href="struct.ProduceBlockRequest.html" title="struct hotstuff_rs::app::ProduceBlockRequest"><code>ProduceBlockRequest</code></a>), a function must always produce the same response
+(<a href="struct.ProduceBlockResponse.html" title="struct hotstuff_rs::app::ProduceBlockResponse"><code>ProduceBlockResponse</code></a>), regardless of whether the machine executing the call has an Intel CPU
+or an AMD CPU, whether a pseudorandom number generator spits out 0 or 1, or whether it is currently
+raining outside, etc.</p>
+<p>The key to making sure that these methods are deterministic is ensuring that their respective
+method bodies depend on and <strong>only on</strong> the information that is available through the public methods
+of their request type. In particular, this means not reading the block tree through a
+<code>BlockTreeSnapshot</code>, but reading it only through <a href="../block_tree/accessors/app/struct.AppBlockTreeView.html" title="struct hotstuff_rs::block_tree::accessors::app::AppBlockTreeView"><code>AppBlockTreeView</code></a>.</p>
+<h2 id="timing-requirements"><a class="doc-anchor" href="#timing-requirements">§</a>Timing requirements</h2>
+<p>HotStuff-rs calls <code>produce_block</code> when a replica has to produce a block, and calls <code>validate_block</code>
+when a replica has to validate a block.</p>
+<p>These calls are <strong>blocking</strong> (synchronous) calls, so a replica will not continue making progress
+until they complete. Because of this, library users should implement <code>produce_block</code> and
+<code>validate_block</code> satisfy a specific timing constraint so that replicas do not spend too long in
+these functions and cause views to timeout and progress to stall. This timing constraint is
+exactly:</p>
+<p><code>4 * EWNL + produce_block_duration + validate_block_duration &lt; max_view_time</code>,</p>
+<p>where:</p>
+<ul>
+<li><code>EWNL</code>: “Expected Worst-case Network Latency”. That is, the maximum duration of time needed to send
+a message from a validator to another validator under “normal” network conditions.</li>
+<li><code>produce_block_duration</code>: how long <code>produce_block</code> takes to execute.</li>
+<li><code>validate_block_duration</code>: how long <code>validate_block</code> takes to execute.</li>
+<li><code>max_view_time</code>: the provided
+<a href="../replica/struct.Configuration.html#structfield.max_view_time" title="field hotstuff_rs::replica::Configuration::max_view_time"><code>Configuration::max_view_time</code></a>.</li>
+</ul>
+<h3 id="rationale-behind-timing-requirements"><a class="doc-anchor" href="#rationale-behind-timing-requirements">§</a>Rationale behind timing requirements</h3>
+<p>Let’s say a view begins at time T for the proposer of the view, and assume that:</p>
+<ul>
+<li>Messages take <code>EWNL</code> to deliver between validators,</li>
+<li>The time taken to process messages is negligible besides <code>produce_block_duration</code> and
+<code>validate_block_duration</code>, and</li>
+<li>Every step begins after the previous step has ended (this is a simplifying assumption. In reality,
+for example, the Proposer does not have to wait for replicas to receive <code>AdvanceView</code> in order to
+start producing a block, and therefore, step 3 should really happen at
+<code>T+diff(EWNL, produce_block_duration)</code> instead of at <code>T+EWNL+produce_block_duration</code> as below).</li>
+</ul>
+<p>Then the view will proceed as follows:</p>
+<div><table><thead><tr><th>Step No.</th><th>Time after T (cumulative)</th><th>Events</th></tr></thead><tbody>
+<tr><td>1</td><td><code>+0</code></td><td><ul><li>Proposer enters view.</li><li>Proposer broadcasts <code>AdvanceView</code>.</li><li>Proposer broadcasts <code>Proposal</code></li></ul></td></tr>
+<tr><td>2</td><td><code>+EWNL</code></td><td><ul><li>Replicas receive <code>AdvanceView</code>.</li><li>Replicas enter view.</li></ul></td></tr>
+<tr><td>3</td><td><code>+produce_block_duration</code></td><td><ul><li>Proposer enters view.</li></ul></td></tr>
+<tr><td>4</td><td><code>+EWNL</code></td><td><ul><li>Replicas receive <code>Proposal</code>.</li></ul></td></tr>
+<tr><td>5</td><td><code>+validate_block_duration</code></td><td><ul><li>Replicas send <code>PhaseVote</code>s.</li></ul></td></tr>
+<tr><td>6</td><td><code>+EWNL</code></td><td><ul><li>Next Leader collects <code>PhaseCertificate</code>.</li><li>Next Leader leaves view.</li><li>Next Leader broadcasts <code>AdvanceView</code>.</li><li>Next Leader broadcasts <code>Proposal</code></li></ul></td></tr>
+<tr><td>7</td><td><code>+EWNL</code></td><td><ul><li>Replicas receive <code>AdvanceView</code>.</li><li>Replicas leave view.</li></ul></td></tr>
+</tbody></table>
+</div>
+<p>In the view above (and indeed in any view), there are two possible cases about the identities of
+Proposer and Next Leader:</p>
+<ol>
+<li>If Proposer == Next Leader, then:
+<ol>
+<li>The Proposer/Next Leader enters the view at step no. 1 and leaves at step no. 6, spending <code>3EWNL +    produce_block_duration + validate_block_duration</code> in the view.</li>
+<li>Other replicas enter the view at step no. 2 and leave at step no. 7, spending <code>3EWNL +    produce_block_duration + validate_block_duration</code> in the view.</li>
+</ol>
+</li>
+<li>If Proposer != Next Leader, then:
+<ol>
+<li>Proposer enters the view at step no.1 and leaves at step no. 7, spending <code>4EWNL +    produce_block_duration + validate_block_duration</code> in the view.</li>
+<li>Next Leader enters the view at step no. 2 and leaves at step no. 6, spending <code>2EWNL +    produce_block_duration + validate_block_duration</code> in the view.</li>
+<li>Other replicas enter the view at step no. 2 and leave at step no. 7, spending <code>3EWNL +    produce_block_duration + validate_block_duration</code> in the view.</li>
+</ol>
+</li>
+</ol>
+<p>This shows that the most time a replica will spend in a view under normal network conditions is
+<code>4EWNL + produce_block_duration + validate_block_duration</code> (case 2.1), which is exactly the
+left-hand-side of the timing constraint inequality.</p>
+</div></details><h2 id="required-methods" class="section-header">Required Methods<a href="#required-methods" class="anchor">§</a></h2><div class="methods"><details class="toggle method-toggle" open><summary><section id="tymethod.produce_block" class="method"><a class="src rightside" href="../../src/hotstuff_rs/app.rs.html#143">source</a><h4 class="code-header">fn <a href="#tymethod.produce_block" class="fn">produce_block</a>(
+    &amp;mut self,
+    request: <a class="struct" href="struct.ProduceBlockRequest.html" title="struct hotstuff_rs::app::ProduceBlockRequest">ProduceBlockRequest</a>&lt;'_, K&gt;,
+) -&gt; <a class="struct" href="struct.ProduceBlockResponse.html" title="struct hotstuff_rs::app::ProduceBlockResponse">ProduceBlockResponse</a></h4></section></summary><div class="docblock"><p>Called by HotStuff-rs when the replica becomes a leader and has to produce a new <code>Block</code> to be
+inserted into the block tree and proposed to other validators.</p>
+</div></details><details class="toggle method-toggle" open><summary><section id="tymethod.validate_block" class="method"><a class="src rightside" href="../../src/hotstuff_rs/app.rs.html#147">source</a><h4 class="code-header">fn <a href="#tymethod.validate_block" class="fn">validate_block</a>(
+    &amp;mut self,
+    request: <a class="struct" href="struct.ValidateBlockRequest.html" title="struct hotstuff_rs::app::ValidateBlockRequest">ValidateBlockRequest</a>&lt;'_, '_, K&gt;,
+) -&gt; <a class="enum" href="enum.ValidateBlockResponse.html" title="enum hotstuff_rs::app::ValidateBlockResponse">ValidateBlockResponse</a></h4></section></summary><div class="docblock"><p>Called by HotStuff-rs when the replica receives a <code>Proposal</code> and has to validate the <code>Block</code> inside
+it to decide whether or not it should insert it into the block tree and vote for it.</p>
+</div></details><details class="toggle method-toggle" open><summary><section id="tymethod.validate_block_for_sync" class="method"><a class="src rightside" href="../../src/hotstuff_rs/app.rs.html#175-178">source</a><h4 class="code-header">fn <a href="#tymethod.validate_block_for_sync" class="fn">validate_block_for_sync</a>(
+    &amp;mut self,
+    request: <a class="struct" href="struct.ValidateBlockRequest.html" title="struct hotstuff_rs::app::ValidateBlockRequest">ValidateBlockRequest</a>&lt;'_, '_, K&gt;,
+) -&gt; <a class="enum" href="enum.ValidateBlockResponse.html" title="enum hotstuff_rs::app::ValidateBlockResponse">ValidateBlockResponse</a></h4></section></summary><div class="docblock"><p>Called when the replica is syncing and receives a <code>BlockSyncResponse</code> and has to validate the
+<code>Block</code> inside it to decide whether or not it should insert it into the block tree and vote for it.</p>
+<h5 id="purpose"><a class="doc-anchor" href="#purpose">§</a>Purpose</h5>
+<p>There are several reasons why implementations of <code>App</code> may want calls to <code>validate_block</code> to take
+<em>at least</em> a certain amount of time.</p>
+<p>For example, implementors may want to limit the rate at which views proceed (e.g., to prevent the
+block tree from growing too quickly and exhausting disk space), and may choose to do so by making
+their implementations of <code>produce_block</code> and <code>validate_block</code> cause a thread sleep until a minimum
+amount of time is reached.</p>
+<p>Such a thread sleep solution works to slow down consensus decisions by, among other things, causing
+replicas to block for the amount of time when receiving a block through a <code>Proposal</code>, delaying
+the sending of a <code>PhaseVote</code> to the next leader.</p>
+<p>However, such a solution will not only slow down consensus decisions, it will <em>also</em> slow down
+Block Sync. In general, implementors will want <code>validate_block</code> to take at least a minimum amount of
+time when it is called within a view, but complete as quickly as possible when called during block
+sync.</p>
+<p>This is where <code>validate_block_for_sync</code> comes in. With <code>validate_block_for_sync</code>, implementers can
+rely on the fact that <code>validate_block</code> will <em>only</em> be called within a view, adding a thread sleep
+or other mechanism in it will not slow down sync as long as the mechanism is not also added to
+<code>validate_block_for_sync</code>.</p>
+</div></details></div><h2 id="implementors" class="section-header">Implementors<a href="#implementors" class="anchor">§</a></h2><div id="implementors-list"></div><script src="../../trait.impl/hotstuff_rs/app/trait.App.js" async></script></section></div></main></body></html>
