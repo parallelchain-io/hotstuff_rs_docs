@@ -612,7 +612,6 @@
 <a href="#612" id="612">612</a>
 <a href="#613" id="613">613</a>
 <a href="#614" id="614">614</a>
-<a href="#615" id="615">615</a>
 </pre></div><pre class="rust"><code><span class="comment">/*
     Copyright © 2023, ParallelChain Lab
     Licensed under the Apache License, Version 2.0: http://www.apache.org/licenses/LICENSE-2.0
@@ -631,7 +630,7 @@
 //!   2. The setters of the `ReplicaSpecBuilder`, and
 //!   3. The `ReplicaSpecBuilder::build` method to construct a [`ReplicaSpec`],
 //! - The function to [start](ReplicaSpec::start) a [`Replica`] given its specification,
-//! - The function to [initialize](Replica::initialize) the replica's [Block Tree](crate::state::block_tree),
+//! - The function to [initialize](Replica::initialize) the replica's [Block Tree](crate::block_tree),
 //! - [The type](Replica) which keeps the replica alive.
 //!
 //! # Kinds of replicas
@@ -742,7 +741,7 @@
         server::{BlockSyncServer, BlockSyncServerConfiguration},
     },
     block_tree::{
-        accessors::{internal::BlockTree, public::BlockTreeCamera},
+        accessors::{internal::BlockTreeSingleton, public::BlockTreeCamera},
         pluggables::KVStore,
     },
     event_bus::<span class="kw-2">*</span>,
@@ -953,15 +952,15 @@
 </span><span class="kw">pub struct </span>ReplicaSpec&lt;K: KVStore, A: App&lt;K&gt; + <span class="lifetime">'static</span>, N: Network + <span class="lifetime">'static</span>&gt; {
     <span class="comment">// Required parameters
     </span><span class="attr">#[builder(setter(
-        doc = <span class="string">"Set the application code to be run on the blockchain. The argument must implement the [App](crate::app::App) trait. Required."
+        doc = <span class="string">"Set the application code to be run on the blockchain. The argument must implement the [`App`](crate::app::App) trait. Required."
     </span>))]
     </span>app: A,
     <span class="attr">#[builder(setter(
-        doc = <span class="string">"Set the implementation of peer-to-peer networking. The argument must implement the [Network](crate::network::Network) trait. Required."
+        doc = <span class="string">"Set the implementation of peer-to-peer networking. The argument must implement the [`Network`](crate::networking::network::Network) trait. Required."
     </span>))]
     </span>network: N,
     <span class="attr">#[builder(setter(
-        doc = <span class="string">"Set the implementation of the replica's Key-Value store. The argument must implement the [KVStore](crate::state::KVStore) trait. Required."
+        doc = <span class="string">"Set the implementation of the replica's Key-Value store. The argument must implement the [`KVStore`](crate::block_tree::pluggables::KVStore) trait. Required."
     </span>))]
     </span>kv_store: K,
     <span class="attr">#[builder(setter(
@@ -970,13 +969,13 @@
     </span>configuration: Configuration,
     <span class="comment">// Optional parameters
     </span><span class="attr">#[builder(default, setter(transform = |handler: <span class="kw">impl </span>Fn(<span class="kw-2">&amp;</span>InsertBlockEvent) + Send + <span class="lifetime">'static</span>| <span class="prelude-val">Some</span>(Box::new(handler) <span class="kw">as </span>HandlerPtr&lt;InsertBlockEvent&gt;),
-    doc = <span class="string">"Register a handler closure to be invoked after a block is inserted to the replica's [Block Tree](crate::state::BlockTree). Optional."</span>))]
+    doc = <span class="string">"Register a handler closure to be invoked after a block is inserted to the replica's block tree. Optional."</span>))]
     </span>on_insert_block: <span class="prelude-ty">Option</span>&lt;HandlerPtr&lt;InsertBlockEvent&gt;&gt;,
     <span class="attr">#[builder(default, setter(transform = |handler: <span class="kw">impl </span>Fn(<span class="kw-2">&amp;</span>CommitBlockEvent) + Send + <span class="lifetime">'static</span>| <span class="prelude-val">Some</span>(Box::new(handler) <span class="kw">as </span>HandlerPtr&lt;CommitBlockEvent&gt;),
     doc = <span class="string">"Register a handler closure to be invoked after a block is committed. Optional."</span>))]
     </span>on_commit_block: <span class="prelude-ty">Option</span>&lt;HandlerPtr&lt;CommitBlockEvent&gt;&gt;,
     <span class="attr">#[builder(default, setter(transform = |handler: <span class="kw">impl </span>Fn(<span class="kw-2">&amp;</span>PruneBlockEvent) + Send + <span class="lifetime">'static</span>| <span class="prelude-val">Some</span>(Box::new(handler) <span class="kw">as </span>HandlerPtr&lt;PruneBlockEvent&gt;),
-    doc = <span class="string">"Register a handler closure to be invoked after a block is pruned, i.e., its siblings are removed from the replica's [Block Tree](crate::state::BlockTree). Optional."</span>))]
+    doc = <span class="string">"Register a handler closure to be invoked after a block is pruned, i.e., its siblings are removed from the replica's block tree. Optional."</span>))]
     </span>on_prune_block: <span class="prelude-ty">Option</span>&lt;HandlerPtr&lt;PruneBlockEvent&gt;&gt;,
     <span class="attr">#[builder(default, setter(transform = |handler: <span class="kw">impl </span>Fn(<span class="kw-2">&amp;</span>UpdateHighestPCEvent) + Send + <span class="lifetime">'static</span>| <span class="prelude-val">Some</span>(Box::new(handler) <span class="kw">as </span>HandlerPtr&lt;UpdateHighestPCEvent&gt;),
     doc = <span class="string">"Register a handler closure to be invoked after the replica updates its highest PC. Optional."</span>))]
@@ -1055,7 +1054,7 @@
 <span class="kw">impl</span>&lt;K: KVStore, A: App&lt;K&gt; + <span class="lifetime">'static</span>, N: Network + <span class="lifetime">'static</span>&gt; ReplicaSpec&lt;K, A, N&gt; {
     <span class="doccomment">/// Starts all threads and channels associated with running a replica, and returns the handles to them in a [Replica] struct.
     </span><span class="kw">pub fn </span>start(<span class="kw-2">mut </span><span class="self">self</span>) -&gt; Replica&lt;K&gt; {
-        <span class="kw">let </span>block_tree = BlockTree::new(<span class="self">self</span>.kv_store.clone());
+        <span class="kw">let </span>block_tree = BlockTreeSingleton::new(<span class="self">self</span>.kv_store.clone());
         <span class="self">self</span>.network.init_validator_set(
             block_tree
                 .committed_validator_set()
@@ -1183,7 +1182,7 @@
 }
 
 <span class="kw">impl</span>&lt;K: KVStore&gt; Replica&lt;K&gt; {
-    <span class="doccomment">/// Initializes the replica's [Block Tree](crate::state::block_tree::BlockTree) with the intial
+    <span class="doccomment">/// Initializes the replica's [block tree](crate::block_tree) with the intial
     /// [app state updates](crate::types::update_sets::AppStateUpdates) and
     /// [validator set updates](crate::types::update_sets::ValidatorSetUpdates).
     </span><span class="kw">pub fn </span>initialize(
@@ -1191,14 +1190,13 @@
         initial_app_state: AppStateUpdates,
         initial_validator_set_state: ValidatorSetState,
     ) {
-        <span class="kw">let </span><span class="kw-2">mut </span>block_tree = BlockTree::new(kv_store);
+        <span class="kw">let </span><span class="kw-2">mut </span>block_tree = BlockTreeSingleton::new(kv_store);
         block_tree
             .initialize(<span class="kw-2">&amp;</span>initial_app_state, <span class="kw-2">&amp;</span>initial_validator_set_state)
             .expect(<span class="string">"Block Tree initialization failed!"</span>)
     }
 
-    <span class="doccomment">/// Returns a [`BlockTreeCamera`] which can be used
-    /// to peek into the [`BlockTree`].
+    <span class="doccomment">/// Get a [`BlockTreeCamera`].
     </span><span class="kw">pub fn </span>block_tree_camera(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span>BlockTreeCamera&lt;K&gt; {
         <span class="kw-2">&amp;</span><span class="self">self</span>.block_tree_camera
     }

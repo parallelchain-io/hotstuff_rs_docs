@@ -104,7 +104,7 @@
 
 <span class="kw">use crate</span>::{
     block_tree::{
-        accessors::internal::{BlockTree, BlockTreeError},
+        accessors::internal::{BlockTreeError, BlockTreeSingleton},
         pluggables::KVStore,
     },
     hotstuff::types::PhaseCertificate,
@@ -125,7 +125,7 @@
 /// `block.justify.phase` must be `Generic` or `Decide`. This invariant is enforced in two places:
 /// 1. When a validator creates a `Block` using [`new`](Self::new).
 /// 2. When a replica receives a `Proposal` containing `block` and checks the
-///    [`safe_block`](crate::state::invariants::safe_block) predicate.
+///    [`safe_block`](crate::block_tree::invariants::safe_block) predicate.
 </span><span class="attr">#[derive(Clone, BorshSerialize, BorshDeserialize)]
 </span><span class="kw">pub struct </span>Block {
     <span class="kw">pub </span>height: BlockHeight,
@@ -180,7 +180,7 @@
     <span class="doccomment">/// Checks if hash and justify are cryptographically correct.
     </span><span class="kw">pub fn </span>is_correct&lt;K: KVStore&gt;(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
-        block_tree: <span class="kw-2">&amp;</span>BlockTree&lt;K&gt;,
+        block_tree: <span class="kw-2">&amp;</span>BlockTreeSingleton&lt;K&gt;,
     ) -&gt; <span class="prelude-ty">Result</span>&lt;bool, BlockTreeError&gt; {
         <span class="prelude-val">Ok</span>(
             <span class="self">self</span>.hash == Block::hash(<span class="self">self</span>.height, <span class="kw-2">&amp;</span><span class="self">self</span>.justify, <span class="kw-2">&amp;</span><span class="self">self</span>.data_hash)

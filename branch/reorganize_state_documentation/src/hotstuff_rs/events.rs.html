@@ -307,8 +307,6 @@
 <a href="#307" id="307">307</a>
 <a href="#308" id="308">308</a>
 <a href="#309" id="309">309</a>
-<a href="#310" id="310">310</a>
-<a href="#311" id="311">311</a>
 </pre></div><pre class="rust"><code><span class="comment">/*
     Copyright © 2023, ParallelChain Lab
     Licensed under the Apache License, Version 2.0: http://www.apache.org/licenses/LICENSE-2.0
@@ -420,42 +418,40 @@
     <span class="kw">pub </span>block: Block,
 }
 
-<span class="doccomment">/// A block, identifiable by its [`CryptoHash`], was committed. This involves persistent changes to the
+<span class="doccomment">/// A `block` was committed. This involves persistent changes to the
 /// Block Tree.
 </span><span class="kw">pub struct </span>CommitBlockEvent {
     <span class="kw">pub </span>timestamp: SystemTime,
     <span class="kw">pub </span>block: CryptoHash,
 }
 
-<span class="doccomment">/// A block, identified by its [`CryptoHash`], was "pruned" (i.e., the block's siblings were permanently
+<span class="doccomment">/// A `block` was "pruned" (i.e., the block's siblings were permanently
 /// deleted from the Block Tree).
 </span><span class="kw">pub struct </span>PruneBlockEvent {
     <span class="kw">pub </span>timestamp: SystemTime,
     <span class="kw">pub </span>block: CryptoHash,
 }
 
-<span class="doccomment">/// The Highest `PhaseCertificate`, stored in the [`Block Tree`](crate::state::block_tree::BlockTree),
-/// was updated.
+<span class="doccomment">/// The "Highest `PhaseCertificate`" stored in the block tree was updated.
 </span><span class="kw">pub struct </span>UpdateHighestPCEvent {
     <span class="kw">pub </span>timestamp: SystemTime,
     <span class="kw">pub </span>highest_pc: PhaseCertificate,
 }
 
-<span class="doccomment">/// The Locked `PhaseCertificate`, stored in the [`Block Tree`](crate::state::block_tree::BlockTree),
-/// was updated.
+<span class="doccomment">/// The "Locked `PhaseCertificate`" stored in the block tree was updated.
 </span><span class="kw">pub struct </span>UpdateLockedPCEvent {
     <span class="kw">pub </span>timestamp: SystemTime,
     <span class="kw">pub </span>locked_pc: PhaseCertificate,
 }
 
-<span class="doccomment">/// The Highest Timeout Certificate, stored in the [`BlockTree`](crate::state::block_tree::BlockTree),
-/// was updated. Includes the new Highest [`TimeoutCertificate`].
+<span class="doccomment">/// The "Highest `TimeoutCertificate`" stored in the block tree was updated.
 </span><span class="kw">pub struct </span>UpdateHighestTCEvent {
     <span class="kw">pub </span>timestamp: SystemTime,
     <span class="kw">pub </span>highest_tc: TimeoutCertificate,
 }
 
-<span class="doccomment">/// The committed validator set, stored in the [Block Tree](crate::state::block_tree::BlockTree), was updated.
+<span class="doccomment">/// The "Committed Validator Set" stored in the block tree, was updated.
+///
 /// Includes the [hash](crate::types::data_types::CryptoHash) of the block with which the updates are
 /// associated, and the information about the
 /// [validator set updates](crate::types::update_sets::ValidatorSetUpdates), i.e., the insertions and
@@ -590,7 +586,7 @@
 
 <span class="doccomment">/// The replica exited sync mode, during which it tried to sync with a given peer identifiable by its
 /// [public key](ed25519_dalek::VerifyingKey), and inserted a given number of blocks received from the
-/// peer into its [Block Tree](crate::state::block_tree::BlockTree).
+/// peer into its block tree.
 </span><span class="kw">pub struct </span>EndSyncEvent {
     <span class="kw">pub </span>timestamp: SystemTime,
     <span class="kw">pub </span>peer: VerifyingKey,

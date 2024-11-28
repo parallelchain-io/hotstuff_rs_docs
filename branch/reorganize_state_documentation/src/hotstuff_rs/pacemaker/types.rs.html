@@ -167,6 +167,9 @@
 <a href="#167" id="167">167</a>
 <a href="#168" id="168">168</a>
 <a href="#169" id="169">169</a>
+<a href="#170" id="170">170</a>
+<a href="#171" id="171">171</a>
+<a href="#172" id="172">172</a>
 </pre></div><pre class="rust"><code><span class="comment">/*
     Copyright © 2023, ParallelChain Lab
     Licensed under the Apache License, Version 2.0: http://www.apache.org/licenses/LICENSE-2.0
@@ -179,7 +182,7 @@
 
 <span class="kw">use crate</span>::{
     block_tree::{
-        accessors::internal::{BlockTree, BlockTreeError},
+        accessors::internal::{BlockTreeError, BlockTreeSingleton},
         pluggables::KVStore,
     },
     pacemaker::messages::TimeoutVote,
@@ -207,7 +210,10 @@
     /// During the speculation phase, i.e., when the new validator set has been committed, but the old
     /// validator set is still active, a TC is correct if it is correctly signed by a quorum from either
     /// of the two validator sets.
-    </span><span class="kw">fn </span>is_correct&lt;K: KVStore&gt;(<span class="kw-2">&amp;</span><span class="self">self</span>, block_tree: <span class="kw-2">&amp;</span>BlockTree&lt;K&gt;) -&gt; <span class="prelude-ty">Result</span>&lt;bool, BlockTreeError&gt; {
+    </span><span class="kw">fn </span>is_correct&lt;K: KVStore&gt;(
+        <span class="kw-2">&amp;</span><span class="self">self</span>,
+        block_tree: <span class="kw-2">&amp;</span>BlockTreeSingleton&lt;K&gt;,
+    ) -&gt; <span class="prelude-ty">Result</span>&lt;bool, BlockTreeError&gt; {
         <span class="kw">let </span>validator_set_state = block_tree.validator_set_state()<span class="question-mark">?</span>;
         <span class="kw">if </span>validator_set_state.update_decided() {
             <span class="prelude-val">Ok</span>(<span class="self">self</span>.is_correctly_signed(validator_set_state.committed_validator_set()))

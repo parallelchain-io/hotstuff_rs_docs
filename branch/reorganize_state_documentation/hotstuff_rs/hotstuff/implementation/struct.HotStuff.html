@@ -40,7 +40,7 @@ at the soonest possible opportunity.</p>
 </div></details><details class="toggle method-toggle" open><summary><section id="method.enter_view" class="method"><a class="src rightside" href="../../../src/hotstuff_rs/hotstuff/implementation.rs.html#128-276">source</a><h4 class="code-header">pub(crate) fn <a href="#method.enter_view" class="fn">enter_view</a>&lt;K: <a class="trait" href="../../block_tree/pluggables/trait.KVStore.html" title="trait hotstuff_rs::block_tree::pluggables::KVStore">KVStore</a>&gt;(
     &amp;mut self,
     new_view_info: <a class="struct" href="../../pacemaker/protocol/struct.ViewInfo.html" title="struct hotstuff_rs::pacemaker::protocol::ViewInfo">ViewInfo</a>,
-    block_tree: &amp;mut <a class="struct" href="../../block_tree/accessors/internal/struct.BlockTree.html" title="struct hotstuff_rs::block_tree::accessors::internal::BlockTree">BlockTree</a>&lt;K&gt;,
+    block_tree: &amp;mut <a class="struct" href="../../block_tree/accessors/internal/struct.BlockTreeSingleton.html" title="struct hotstuff_rs::block_tree::accessors::internal::BlockTreeSingleton">BlockTreeSingleton</a>&lt;K&gt;,
     app: &amp;mut impl <a class="trait" href="../../app/trait.App.html" title="trait hotstuff_rs::app::App">App</a>&lt;K&gt;,
 ) -&gt; <a class="enum" href="https://doc.rust-lang.org/1.82.0/core/result/enum.Result.html" title="enum core::result::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.82.0/std/primitive.unit.html">()</a>, <a class="enum" href="enum.HotStuffError.html" title="enum hotstuff_rs::hotstuff::implementation::HotStuffError">HotStuffError</a>&gt;</h4></section></summary><div class="docblock"><p>On receiving a new <a href="../../pacemaker/protocol/struct.ViewInfo.html" title="struct hotstuff_rs::pacemaker::protocol::ViewInfo"><code>ViewInfo</code></a> from the <a href="../../pacemaker/protocol/struct.Pacemaker.html" title="struct hotstuff_rs::pacemaker::protocol::Pacemaker"><code>Pacemaker</code></a>, send
 messages and perform state updates associated with exiting the current view, and update the local
@@ -54,7 +54,7 @@ view info.</p>
     &amp;mut self,
     msg: <a class="enum" href="../messages/enum.HotStuffMessage.html" title="enum hotstuff_rs::hotstuff::messages::HotStuffMessage">HotStuffMessage</a>,
     origin: &amp;<a class="struct" href="../../types/validator_set/struct.VerifyingKey.html" title="struct hotstuff_rs::types::validator_set::VerifyingKey">VerifyingKey</a>,
-    block_tree: &amp;mut <a class="struct" href="../../block_tree/accessors/internal/struct.BlockTree.html" title="struct hotstuff_rs::block_tree::accessors::internal::BlockTree">BlockTree</a>&lt;K&gt;,
+    block_tree: &amp;mut <a class="struct" href="../../block_tree/accessors/internal/struct.BlockTreeSingleton.html" title="struct hotstuff_rs::block_tree::accessors::internal::BlockTreeSingleton">BlockTreeSingleton</a>&lt;K&gt;,
     app: &amp;mut impl <a class="trait" href="../../app/trait.App.html" title="trait hotstuff_rs::app::App">App</a>&lt;K&gt;,
 ) -&gt; <a class="enum" href="https://doc.rust-lang.org/1.82.0/core/result/enum.Result.html" title="enum core::result::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.82.0/std/primitive.unit.html">()</a>, <a class="enum" href="enum.HotStuffError.html" title="enum hotstuff_rs::hotstuff::implementation::HotStuffError">HotStuffError</a>&gt;</h4></section></summary><div class="docblock"><p>Process a newly received message for the current view according to the HotStuff subprotocol.</p>
 <h6 id="internal-procedure"><a class="doc-anchor" href="#internal-procedure">§</a>Internal procedure</h6>
@@ -77,7 +77,7 @@ of the received message:
     &amp;mut self,
     proposal: <a class="struct" href="../messages/struct.Proposal.html" title="struct hotstuff_rs::hotstuff::messages::Proposal">Proposal</a>,
     origin: &amp;<a class="struct" href="../../types/validator_set/struct.VerifyingKey.html" title="struct hotstuff_rs::types::validator_set::VerifyingKey">VerifyingKey</a>,
-    block_tree: &amp;mut <a class="struct" href="../../block_tree/accessors/internal/struct.BlockTree.html" title="struct hotstuff_rs::block_tree::accessors::internal::BlockTree">BlockTree</a>&lt;K&gt;,
+    block_tree: &amp;mut <a class="struct" href="../../block_tree/accessors/internal/struct.BlockTreeSingleton.html" title="struct hotstuff_rs::block_tree::accessors::internal::BlockTreeSingleton">BlockTreeSingleton</a>&lt;K&gt;,
     app: &amp;mut impl <a class="trait" href="../../app/trait.App.html" title="trait hotstuff_rs::app::App">App</a>&lt;K&gt;,
 ) -&gt; <a class="enum" href="https://doc.rust-lang.org/1.82.0/core/result/enum.Result.html" title="enum core::result::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.82.0/std/primitive.unit.html">()</a>, <a class="enum" href="enum.HotStuffError.html" title="enum hotstuff_rs::hotstuff::implementation::HotStuffError">HotStuffError</a>&gt;</h4></section></summary><div class="docblock"><p>Process a newly received <code>proposal</code>.</p>
 <h5 id="preconditions"><a class="doc-anchor" href="#preconditions">§</a>Preconditions</h5>
@@ -88,7 +88,7 @@ of the received message:
     &amp;mut self,
     nudge: <a class="struct" href="../messages/struct.Nudge.html" title="struct hotstuff_rs::hotstuff::messages::Nudge">Nudge</a>,
     origin: &amp;<a class="struct" href="../../types/validator_set/struct.VerifyingKey.html" title="struct hotstuff_rs::types::validator_set::VerifyingKey">VerifyingKey</a>,
-    block_tree: &amp;mut <a class="struct" href="../../block_tree/accessors/internal/struct.BlockTree.html" title="struct hotstuff_rs::block_tree::accessors::internal::BlockTree">BlockTree</a>&lt;K&gt;,
+    block_tree: &amp;mut <a class="struct" href="../../block_tree/accessors/internal/struct.BlockTreeSingleton.html" title="struct hotstuff_rs::block_tree::accessors::internal::BlockTreeSingleton">BlockTreeSingleton</a>&lt;K&gt;,
 ) -&gt; <a class="enum" href="https://doc.rust-lang.org/1.82.0/core/result/enum.Result.html" title="enum core::result::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.82.0/std/primitive.unit.html">()</a>, <a class="enum" href="enum.HotStuffError.html" title="enum hotstuff_rs::hotstuff::implementation::HotStuffError">HotStuffError</a>&gt;</h4></section></summary><div class="docblock"><p>Process the received nudge.</p>
 <h5 id="preconditions-1"><a class="doc-anchor" href="#preconditions-1">§</a>Preconditions</h5>
 <p><a href="../roles/fn.is_proposer.html" title="fn hotstuff_rs::hotstuff::roles::is_proposer"><code>is_proposer(origin, self.view_info.view, &amp;block_tree.validator_set_state()?)</code></a>.</p>
@@ -98,7 +98,7 @@ of the received message:
     &amp;mut self,
     phase_vote: <a class="struct" href="../messages/struct.PhaseVote.html" title="struct hotstuff_rs::hotstuff::messages::PhaseVote">PhaseVote</a>,
     signer: &amp;<a class="struct" href="../../types/validator_set/struct.VerifyingKey.html" title="struct hotstuff_rs::types::validator_set::VerifyingKey">VerifyingKey</a>,
-    block_tree: &amp;mut <a class="struct" href="../../block_tree/accessors/internal/struct.BlockTree.html" title="struct hotstuff_rs::block_tree::accessors::internal::BlockTree">BlockTree</a>&lt;K&gt;,
+    block_tree: &amp;mut <a class="struct" href="../../block_tree/accessors/internal/struct.BlockTreeSingleton.html" title="struct hotstuff_rs::block_tree::accessors::internal::BlockTreeSingleton">BlockTreeSingleton</a>&lt;K&gt;,
 ) -&gt; <a class="enum" href="https://doc.rust-lang.org/1.82.0/core/result/enum.Result.html" title="enum core::result::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.82.0/std/primitive.unit.html">()</a>, <a class="enum" href="enum.HotStuffError.html" title="enum hotstuff_rs::hotstuff::implementation::HotStuffError">HotStuffError</a>&gt;</h4></section></summary><div class="docblock"><p>Process a received <code>phase_vote</code>.</p>
 <h5 id="specification-3"><a class="doc-anchor" href="#specification-3">§</a>Specification</h5>
 <p><a href="../sequence_flow/index.html#on-receive-phase-vote" title="mod hotstuff_rs::hotstuff::sequence_flow">On Receive Phase Vote</a>.</p>
@@ -106,7 +106,7 @@ of the received message:
     &amp;mut self,
     new_view: <a class="struct" href="../messages/struct.NewView.html" title="struct hotstuff_rs::hotstuff::messages::NewView">NewView</a>,
     origin: &amp;<a class="struct" href="../../types/validator_set/struct.VerifyingKey.html" title="struct hotstuff_rs::types::validator_set::VerifyingKey">VerifyingKey</a>,
-    block_tree: &amp;mut <a class="struct" href="../../block_tree/accessors/internal/struct.BlockTree.html" title="struct hotstuff_rs::block_tree::accessors::internal::BlockTree">BlockTree</a>&lt;K&gt;,
+    block_tree: &amp;mut <a class="struct" href="../../block_tree/accessors/internal/struct.BlockTreeSingleton.html" title="struct hotstuff_rs::block_tree::accessors::internal::BlockTreeSingleton">BlockTreeSingleton</a>&lt;K&gt;,
 ) -&gt; <a class="enum" href="https://doc.rust-lang.org/1.82.0/core/result/enum.Result.html" title="enum core::result::Result">Result</a>&lt;<a class="primitive" href="https://doc.rust-lang.org/1.82.0/std/primitive.unit.html">()</a>, <a class="enum" href="enum.HotStuffError.html" title="enum hotstuff_rs::hotstuff::implementation::HotStuffError">HotStuffError</a>&gt;</h4></section></summary><div class="docblock"><p>Process the received NewView.</p>
 <h5 id="specification-4"><a class="doc-anchor" href="#specification-4">§</a>Specification</h5>
 <p><a href="../sequence_flow/index.html#on-receive-new-view" title="mod hotstuff_rs::hotstuff::sequence_flow">On Receive New View</a>.</p>

@@ -744,7 +744,7 @@
         App, ProduceBlockRequest, ProduceBlockResponse, ValidateBlockRequest, ValidateBlockResponse,
     },
     block_tree::{
-        accessors::internal::{BlockTree, BlockTreeError},
+        accessors::internal::{BlockTreeError, BlockTreeSingleton},
         invariants::{repropose_block, safe_block, safe_nudge, safe_pc},
         pluggables::KVStore,
     },
@@ -857,7 +857,7 @@
     </span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>enter_view&lt;K: KVStore&gt;(
         <span class="kw-2">&amp;mut </span><span class="self">self</span>,
         new_view_info: ViewInfo,
-        block_tree: <span class="kw-2">&amp;mut </span>BlockTree&lt;K&gt;,
+        block_tree: <span class="kw-2">&amp;mut </span>BlockTreeSingleton&lt;K&gt;,
         app: <span class="kw-2">&amp;mut </span><span class="kw">impl </span>App&lt;K&gt;,
     ) -&gt; <span class="prelude-ty">Result</span>&lt;(), HotStuffError&gt; {
         <span class="kw">let </span>validator_set_state = block_tree.validator_set_state()<span class="question-mark">?</span>;
@@ -1022,7 +1022,7 @@
         <span class="kw-2">&amp;mut </span><span class="self">self</span>,
         msg: HotStuffMessage,
         origin: <span class="kw-2">&amp;</span>VerifyingKey,
-        block_tree: <span class="kw-2">&amp;mut </span>BlockTree&lt;K&gt;,
+        block_tree: <span class="kw-2">&amp;mut </span>BlockTreeSingleton&lt;K&gt;,
         app: <span class="kw-2">&amp;mut </span><span class="kw">impl </span>App&lt;K&gt;,
     ) -&gt; <span class="prelude-ty">Result</span>&lt;(), HotStuffError&gt; {
         <span class="comment">// 1. If Proposal or Nudge received, check if the sender is a proposer for this view,
@@ -1070,7 +1070,7 @@
         <span class="kw-2">&amp;mut </span><span class="self">self</span>,
         proposal: Proposal,
         origin: <span class="kw-2">&amp;</span>VerifyingKey,
-        block_tree: <span class="kw-2">&amp;mut </span>BlockTree&lt;K&gt;,
+        block_tree: <span class="kw-2">&amp;mut </span>BlockTreeSingleton&lt;K&gt;,
         app: <span class="kw-2">&amp;mut </span><span class="kw">impl </span>App&lt;K&gt;,
     ) -&gt; <span class="prelude-ty">Result</span>&lt;(), HotStuffError&gt; {
         Event::ReceiveProposal(ReceiveProposalEvent {
@@ -1199,7 +1199,7 @@
         <span class="kw-2">&amp;mut </span><span class="self">self</span>,
         nudge: Nudge,
         origin: <span class="kw-2">&amp;</span>VerifyingKey,
-        block_tree: <span class="kw-2">&amp;mut </span>BlockTree&lt;K&gt;,
+        block_tree: <span class="kw-2">&amp;mut </span>BlockTreeSingleton&lt;K&gt;,
     ) -&gt; <span class="prelude-ty">Result</span>&lt;(), HotStuffError&gt; {
         Event::ReceiveNudge(ReceiveNudgeEvent {
             timestamp: SystemTime::now(),
@@ -1303,7 +1303,7 @@
         <span class="kw-2">&amp;mut </span><span class="self">self</span>,
         phase_vote: PhaseVote,
         signer: <span class="kw-2">&amp;</span>VerifyingKey,
-        block_tree: <span class="kw-2">&amp;mut </span>BlockTree&lt;K&gt;,
+        block_tree: <span class="kw-2">&amp;mut </span>BlockTreeSingleton&lt;K&gt;,
     ) -&gt; <span class="prelude-ty">Result</span>&lt;(), HotStuffError&gt; {
         Event::ReceivePhaseVote(ReceivePhaseVoteEvent {
             timestamp: SystemTime::now(),
@@ -1359,7 +1359,7 @@
         <span class="kw-2">&amp;mut </span><span class="self">self</span>,
         new_view: NewView,
         origin: <span class="kw-2">&amp;</span>VerifyingKey,
-        block_tree: <span class="kw-2">&amp;mut </span>BlockTree&lt;K&gt;,
+        block_tree: <span class="kw-2">&amp;mut </span>BlockTreeSingleton&lt;K&gt;,
     ) -&gt; <span class="prelude-ty">Result</span>&lt;(), HotStuffError&gt; {
         Event::ReceiveNewView(ReceiveNewViewEvent {
             timestamp: SystemTime::now(),

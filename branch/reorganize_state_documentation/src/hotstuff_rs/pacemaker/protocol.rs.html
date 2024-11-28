@@ -832,7 +832,7 @@
 
 <span class="kw">use crate</span>::{
     block_tree::{
-        accessors::internal::{BlockTree, BlockTreeError, BlockTreeWriteBatch},
+        accessors::internal::{BlockTreeError, BlockTreeSingleton, BlockTreeWriteBatch},
         pluggables::KVStore,
     },
     events::{
@@ -865,7 +865,7 @@
 ///    whether the view should be updated,
 /// 3. [Pacemaker::tick]: updates the internal state of the Pacemaker and broadcasts a message if needed
 ///    in response to a time measurement,
-/// 4. [Pacemaker::on_receive_msg]: updates the [`PacemakerState`] and possibly the [`BlockTree`], as well
+/// 4. [Pacemaker::on_receive_msg]: updates the [`PacemakerState`] and possibly the block tree, as well
 ///    as broadcasts messages, in response to a received [`PacemakerMessage`].
 ///
 /// If any of these actions fail, a [`PacemakerError`] is returned.
@@ -923,7 +923,7 @@
     /// timeout vote collectors accordingly.
     </span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>tick&lt;K: KVStore&gt;(
         <span class="kw-2">&amp;mut </span><span class="self">self</span>,
-        block_tree: <span class="kw-2">&amp;</span>BlockTree&lt;K&gt;,
+        block_tree: <span class="kw-2">&amp;</span>BlockTreeSingleton&lt;K&gt;,
     ) -&gt; <span class="prelude-ty">Result</span>&lt;(), PacemakerError&gt; {
         <span class="kw">let </span>cur_view = <span class="self">self</span>.view_info.view;
         <span class="kw">let </span>validator_set_state = block_tree.validator_set_state()<span class="question-mark">?</span>;
@@ -1003,7 +1003,7 @@
         <span class="kw-2">&amp;mut </span><span class="self">self</span>,
         msg: PacemakerMessage,
         origin: <span class="kw-2">&amp;</span>VerifyingKey,
-        block_tree: <span class="kw-2">&amp;mut </span>BlockTree&lt;K&gt;,
+        block_tree: <span class="kw-2">&amp;mut </span>BlockTreeSingleton&lt;K&gt;,
     ) -&gt; <span class="prelude-ty">Result</span>&lt;(), PacemakerError&gt; {
         <span class="kw">match </span>msg {
             PacemakerMessage::TimeoutVote(timeout_vote) =&gt; {
@@ -1032,7 +1032,7 @@
         <span class="kw-2">&amp;mut </span><span class="self">self</span>,
         timeout_vote: TimeoutVote,
         signer: <span class="kw-2">&amp;</span>VerifyingKey,
-        block_tree: <span class="kw-2">&amp;mut </span>BlockTree&lt;K&gt;,
+        block_tree: <span class="kw-2">&amp;mut </span>BlockTreeSingleton&lt;K&gt;,
     ) -&gt; <span class="prelude-ty">Result</span>&lt;(), PacemakerError&gt; {
         Event::ReceiveTimeoutVote(ReceiveTimeoutVoteEvent {
             timestamp: SystemTime::now(),
@@ -1142,7 +1142,7 @@
         <span class="kw-2">&amp;mut </span><span class="self">self</span>,
         advance_view: AdvanceView,
         origin: <span class="kw-2">&amp;</span>VerifyingKey,
-        block_tree: <span class="kw-2">&amp;mut </span>BlockTree&lt;K&gt;,
+        block_tree: <span class="kw-2">&amp;mut </span>BlockTreeSingleton&lt;K&gt;,
     ) -&gt; <span class="prelude-ty">Result</span>&lt;(), PacemakerError&gt; {
         Event::ReceiveAdvanceView(ReceiveAdvanceViewEvent {
             timestamp: SystemTime::now(),

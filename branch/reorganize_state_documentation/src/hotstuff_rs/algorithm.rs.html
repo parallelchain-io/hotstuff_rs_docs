@@ -180,7 +180,6 @@
 <a href="#180" id="180">180</a>
 <a href="#181" id="181">181</a>
 <a href="#182" id="182">182</a>
-<a href="#183" id="183">183</a>
 </pre></div><pre class="rust"><code><span class="comment">/*
     Copyright © 2023, ParallelChain Lab
     Licensed under the Apache License, Version 2.0: http://www.apache.org/licenses/LICENSE-2.0
@@ -202,7 +201,7 @@
         client::{BlockSyncClient, BlockSyncClientConfiguration},
         messages::BlockSyncResponse,
     },
-    block_tree::{accessors::internal::BlockTree, pluggables::KVStore},
+    block_tree::{accessors::internal::BlockTreeSingleton, pluggables::KVStore},
     events::<span class="kw-2">*</span>,
     hotstuff::implementation::{HotStuff, HotStuffConfiguration},
     networking::{
@@ -212,14 +211,13 @@
         sending::SenderHandle,
     },
     pacemaker::protocol::{Pacemaker, PacemakerConfiguration},
-    <span class="comment">// state::*,
-    </span>types::data_types::{BufferSize, ChainID, ViewNumber},
+    types::data_types::{BufferSize, ChainID, ViewNumber},
 };
 
 <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">struct </span>Algorithm&lt;N: Network + <span class="lifetime">'static</span>, K: KVStore, A: App&lt;K&gt; + <span class="lifetime">'static</span>&gt; {
     chain_id: ChainID,
     pm_stub: ProgressMessageStub,
-    block_tree: BlockTree&lt;K&gt;,
+    block_tree: BlockTreeSingleton&lt;K&gt;,
     app: A,
     hotstuff: HotStuff&lt;N&gt;,
     pacemaker: Pacemaker&lt;N&gt;,
@@ -233,7 +231,7 @@
         hotstuff_config: HotStuffConfiguration,
         pacemaker_config: PacemakerConfiguration,
         block_sync_client_config: BlockSyncClientConfiguration,
-        block_tree: BlockTree&lt;K&gt;,
+        block_tree: BlockTreeSingleton&lt;K&gt;,
         app: A,
         network: N,
         progress_msg_receiver: Receiver&lt;(VerifyingKey, ProgressMessage)&gt;,

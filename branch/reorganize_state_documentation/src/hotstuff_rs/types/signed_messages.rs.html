@@ -322,6 +322,9 @@
 <a href="#322" id="322">322</a>
 <a href="#323" id="323">323</a>
 <a href="#324" id="324">324</a>
+<a href="#325" id="325">325</a>
+<a href="#326" id="326">326</a>
+<a href="#327" id="327">327</a>
 </pre></div><pre class="rust"><code><span class="comment">/*
     Copyright © 2023, ParallelChain Lab
     Licensed under the Apache License, Version 2.0: http://www.apache.org/licenses/LICENSE-2.0
@@ -359,7 +362,7 @@
 //! with them inside a single interface, which simplifies usage.
 
 </span><span class="kw">use </span><span class="kw">crate</span>::block_tree::{
-    accessors::internal::{BlockTree, BlockTreeError},
+    accessors::internal::{BlockTreeError, BlockTreeSingleton},
     pluggables::KVStore,
 };
 
@@ -418,7 +421,10 @@
     ///    Validator Set, or against both.
     /// 3. Call [`is_correctly_signed`](Certificate::is_correctly_signed) on the certificate, passing the
     ///    committed validator set, the previous validator set, or both (in separate calls).
-    </span><span class="kw">fn </span>is_correct&lt;K: KVStore&gt;(<span class="kw-2">&amp;</span><span class="self">self</span>, block_tree: <span class="kw-2">&amp;</span>BlockTree&lt;K&gt;) -&gt; <span class="prelude-ty">Result</span>&lt;bool, BlockTreeError&gt;;
+    </span><span class="kw">fn </span>is_correct&lt;K: KVStore&gt;(
+        <span class="kw-2">&amp;</span><span class="self">self</span>,
+        block_tree: <span class="kw-2">&amp;</span>BlockTreeSingleton&lt;K&gt;,
+    ) -&gt; <span class="prelude-ty">Result</span>&lt;bool, BlockTreeError&gt;;
 
     <span class="doccomment">/// Check whether the certificate is correctly signed by a quorum of validators in the given
     /// `validator_set`.

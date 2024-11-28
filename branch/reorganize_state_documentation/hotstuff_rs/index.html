@@ -3,7 +3,7 @@
 <h2 id="features"><a class="doc-anchor" href="#features">§</a>Features</h2>
 <ul>
 <li><strong>Pluggable components</strong>: library users get to provide their own business logic
-(<a href="app/index.html" title="mod hotstuff_rs::app"><code>app</code></a>), key-value storage (<a href="crate::state::kv_store"><code>kv_store</code></a>), and peer-to-peer
+(<a href="app/index.html" title="mod hotstuff_rs::app"><code>app</code></a>), key-value storage (<a href="block_tree/pluggables/trait.KVStore.html" title="trait hotstuff_rs::block_tree::pluggables::KVStore"><code>kv_store</code></a>), and peer-to-peer
 networking (<a href="networking/network/index.html" title="mod hotstuff_rs::networking::network"><code>network</code></a>). HotStuff-rs is agnostic to these details and
 can therefore be adapted to many use-cases.</li>
 <li><strong>Dynamic validator sets</strong>: <code>App</code>s can control and change the set of replicas (“validators”) that
@@ -68,10 +68,10 @@ according to user-defined application-level semantics.</p>
 <p>If the block is valid, then the replica will create a <a href="hotstuff/messages/struct.PhaseVote.html" title="struct hotstuff_rs::hotstuff::messages::PhaseVote"><code>PhaseVote</code></a>
 by signing a message with its  <a href="types/validator_set/struct.SigningKey.html" title="struct hotstuff_rs::types::validator_set::SigningKey"><code>SigningKey</code></a>, and send this
 to the <a href="hotstuff/roles/fn.phase_vote_recipient.html" title="fn hotstuff_rs::hotstuff::roles::phase_vote_recipient"><code>phase_vote_recipient</code></a>. Then, it will insert the
-block to its <a href="state::block_tree">Block Tree</a>, which the library stores in the
-<a href="state::kv_store"><code>KVStore</code></a> provided by the user.</p>
+block to its <a href="block_tree/index.html" title="mod hotstuff_rs::block_tree">Block Tree</a>, which the library stores in the
+<a href="block_tree/pluggables/trait.KVStore.html" title="trait hotstuff_rs::block_tree::pluggables::KVStore"><code>KVStore</code></a> provided by the user.</p>
 <p>The overall result is an immutable “block chain” that is guaranteed to satisfy safety and liveness
-<a href="state::invariants"><code>invariants</code></a> as long as no more than 1/3rd of the
+<a href="block_tree/invariants/index.html" title="mod hotstuff_rs::block_tree::invariants"><code>invariants</code></a> as long as no more than 1/3rd of the
 <a href="types/data_types/struct.TotalPower.html" title="struct hotstuff_rs::types::data_types::TotalPower"><code>TotalPower</code></a> of a
 <a href="types/validator_set/struct.ValidatorSet.html" title="struct hotstuff_rs::types::validator_set::ValidatorSet"><code>ValidatorSet</code></a> is faulty.</p>
 <p>As all of this is happening, the algorithm constantly emits <a href="events/index.html" title="mod hotstuff_rs::events"><code>events</code></a>, which user code can receive

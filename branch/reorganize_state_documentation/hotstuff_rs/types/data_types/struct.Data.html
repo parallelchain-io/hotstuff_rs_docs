@@ -2,12 +2,12 @@
 in a <a href="../block/struct.Block.html" title="struct hotstuff_rs::types::block::Block"><code>Block</code></a>.</p>
 <h2 id="querying-only-a-part-of-data"><a class="doc-anchor" href="#querying-only-a-part-of-data">§</a>Querying only a part of <code>Data</code></h2>
 <p>Library users can choose between two methods of
-<a href="crate::state::block_tree_snapshot::BlockTreeSnapshot"><code>BlockTreeSnapshot</code></a> to get a <code>Block</code>’s
+<a href="../../block_tree/accessors/public/struct.BlockTreeSnapshot.html" title="struct hotstuff_rs::block_tree::accessors::public::BlockTreeSnapshot"><code>BlockTreeSnapshot</code></a> to get a <code>Block</code>’s
 <code>Data</code>:</p>
 <ol>
-<li><a href="crate::state::block_tree_snapshot::BlockTreeSnapshot::block_data"><code>block_data</code></a> gets the whole of
+<li><a href="../../block_tree/accessors/public/struct.BlockTreeSnapshot.html#method.block_data" title="method hotstuff_rs::block_tree::accessors::public::BlockTreeSnapshot::block_data"><code>block_data</code></a> gets the whole of
 <code>block.data</code> in a single call.</li>
-<li><a href="crate::state::block_tree_snapshot::BlockTreeSnapshot::block_datum"><code>block_datum</code></a> gets only
+<li><a href="../../block_tree/accessors/public/struct.BlockTreeSnapshot.html#method.block_datum" title="method hotstuff_rs::block_tree::accessors::public::BlockTreeSnapshot::block_datum"><code>block_datum</code></a> gets only
 <code>block.datum.vec()[datum_index]</code> in a single call.</li>
 </ol>
 <p>The first method is simple, but may be overkill and cause unnecessary I/O operations if a use case

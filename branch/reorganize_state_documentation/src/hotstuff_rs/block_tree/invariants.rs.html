@@ -617,6 +617,7 @@
 <a href="#617" id="617">617</a>
 <a href="#618" id="618">618</a>
 <a href="#619" id="619">619</a>
+<a href="#620" id="620">620</a>
 </pre></div><pre class="rust"><code><span class="comment">/*
     Copyright © 2023, ParallelChain Lab
     Licensed under the Apache License, Version 2.0: http://www.apache.org/licenses/LICENSE-2.0
@@ -660,10 +661,11 @@
 //!
 //! The methods in this module each help enforce a combination of local and global block tree
 //! invariants. Specifically, they do this by ensuring that every block tree *update*, i.e., set of
-//! state mutations done by the [top-level updater methods](BlockTree#impl-BlockTree&lt;K&gt;-1) defined on
-//! the `BlockTree` struct, is invariant-preserving. This idea can be summarized in simple formulaic
-//! terms as: a block tree that satisfies invariants + a invariant-preserving update = an updated block
-//! tree that also satisfies invariants.
+//! state mutations done by the
+//! [top-level updater methods](BlockTreeSingleton#impl-BlockTreeSingleton&lt;K&gt;-1) defined on the
+//! `BlockTreeSingleton` struct, is invariant-preserving. This idea can be summarized in simple
+//! formulaic terms as: a block tree that satisfies invariants + a invariant-preserving update = an
+//! updated block tree that also satisfies invariants.
 //!
 //! Each method works to ensure that every update is invariant-preserving in one of two different ways:
 //! 1. By checking **whether** an event (like receiving a `Proposal` or collecting a `PhaseCertificate`)
@@ -923,7 +925,7 @@
 };
 
 <span class="kw">use super</span>::{
-    accessors::internal::{BlockTree, BlockTreeError},
+    accessors::internal::{BlockTreeError, BlockTreeSingleton},
     pluggables::KVStore,
 };
 
@@ -940,7 +942,7 @@
 /// [`is_correct`](Block::is_correct) is `true` for `block`.
 </span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>safe_block&lt;K: KVStore&gt;(
     block: <span class="kw-2">&amp;</span>Block,
-    block_tree: <span class="kw-2">&amp;</span>BlockTree&lt;K&gt;,
+    block_tree: <span class="kw-2">&amp;</span>BlockTreeSingleton&lt;K&gt;,
     chain_id: ChainID,
 ) -&gt; <span class="prelude-ty">Result</span>&lt;bool, BlockTreeError&gt; {
     <span class="prelude-val">Ok</span>(
@@ -968,7 +970,7 @@
 /// [`is_correct`](crate::types::signed_messages::Certificate::is_correct) is `true` for `block.justify`.
 </span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>safe_pc&lt;K: KVStore&gt;(
     pc: <span class="kw-2">&amp;</span>PhaseCertificate,
-    block_tree: <span class="kw-2">&amp;</span>BlockTree&lt;K&gt;,
+    block_tree: <span class="kw-2">&amp;</span>BlockTreeSingleton&lt;K&gt;,
     chain_id: ChainID,
 ) -&gt; <span class="prelude-ty">Result</span>&lt;bool, BlockTreeError&gt; {
     <span class="prelude-val">Ok</span>(
@@ -999,7 +1001,7 @@
 </span><span class="kw">pub fn </span>safe_nudge&lt;K: KVStore&gt;(
     nudge: <span class="kw-2">&amp;</span>Nudge,
     current_view: ViewNumber,
-    block_tree: <span class="kw-2">&amp;</span>BlockTree&lt;K&gt;,
+    block_tree: <span class="kw-2">&amp;</span>BlockTreeSingleton&lt;K&gt;,
     chain_id: ChainID,
 ) -&gt; <span class="prelude-ty">Result</span>&lt;bool, BlockTreeError&gt; {
     <span class="prelude-val">Ok</span>(
@@ -1038,7 +1040,7 @@
 /// module-level docs.
 </span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>pc_to_lock&lt;K: KVStore&gt;(
     justify: <span class="kw-2">&amp;</span>PhaseCertificate,
-    block_tree: <span class="kw-2">&amp;</span>BlockTree&lt;K&gt;,
+    block_tree: <span class="kw-2">&amp;</span>BlockTreeSingleton&lt;K&gt;,
 ) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="prelude-ty">Option</span>&lt;PhaseCertificate&gt;, BlockTreeError&gt; {
     <span class="comment">// Special case: if `justify` is the Genesis PC, there is no PC to lock.
     </span><span class="kw">if </span>justify.is_genesis_pc() {
@@ -1108,7 +1110,7 @@
 /// ["Committing"](super::invariants#committing) section of `safety`'s module-level docs.
 </span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>block_to_commit&lt;K: KVStore&gt;(
     justify: <span class="kw-2">&amp;</span>PhaseCertificate,
-    block_tree: <span class="kw-2">&amp;</span>BlockTree&lt;K&gt;,
+    block_tree: <span class="kw-2">&amp;</span>BlockTreeSingleton&lt;K&gt;,
 ) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="prelude-ty">Option</span>&lt;CryptoHash&gt;, BlockTreeError&gt; {
     <span class="comment">// Special case: if `justify` is the Genesis PC, there is no block to commit.
     </span><span class="kw">if </span>justify.is_genesis_pc() {
@@ -1203,7 +1205,7 @@
 /// ["Committing"](super::invariants#committing) section of `safety`'s module-level docs.
 </span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>repropose_block&lt;K: KVStore&gt;(
     current_view: ViewNumber,
-    block_tree: <span class="kw-2">&amp;</span>BlockTree&lt;K&gt;,
+    block_tree: <span class="kw-2">&amp;</span>BlockTreeSingleton&lt;K&gt;,
 ) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="prelude-ty">Option</span>&lt;CryptoHash&gt;, BlockTreeError&gt; {
     <span class="kw">let </span>highest_pc = block_tree.highest_pc()<span class="question-mark">?</span>;
     <span class="kw">match </span>highest_pc.phase {
@@ -1224,7 +1226,7 @@
 /// parent, or its grandparent. We do not need to check deeper.
 </span><span class="kw">fn </span>extends_locked_pc_block&lt;K: KVStore&gt;(
     pc: <span class="kw-2">&amp;</span>PhaseCertificate,
-    block_tree: <span class="kw-2">&amp;</span>BlockTree&lt;K&gt;,
+    block_tree: <span class="kw-2">&amp;</span>BlockTreeSingleton&lt;K&gt;,
 ) -&gt; <span class="prelude-ty">Result</span>&lt;bool, BlockTreeError&gt; {
     <span class="kw">let </span>locked_pc = block_tree.locked_pc()<span class="question-mark">?</span>;
     <span class="kw">let </span>block = pc.block;

@@ -394,7 +394,7 @@
 /// two places:
 /// 1. When a validator creates a `Nudge` using [`new`](Self::new).
 /// 2. When a replica receives a `Nudge` and checks the
-///    [`safe_nudge`](crate::state::invariants::safe_nudge) predicate.
+///    [`safe_nudge`](crate::block_tree::invariants::safe_nudge) predicate.
 </span><span class="attr">#[derive(Clone, BorshSerialize, BorshDeserialize)]
 </span><span class="kw">pub struct </span>Nudge {
     <span class="doccomment">/// `ChainID` of the block tree that `justify.block` is part of.
