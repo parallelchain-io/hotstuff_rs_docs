@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"mod":["messages","protocol","types"]};
+window.SIDEBAR_ITEMS = {"mod":["implementation","messages","types"]};

@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/pacemaker/protocol.rs`."><title>protocol.rs - source</title><script>if(window.location.protocol!=="file:")document.head.insertAdjacentHTML("beforeend","SourceSerif4-Regular-46f98efaafac5295.ttf.woff2,FiraSans-Regular-018c141bf0843ffd.woff2,FiraSans-Medium-8f9a781e4970d388.woff2,SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2,SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2".split(",").map(f=>`<link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/${f}">`).join(""))</script><link rel="stylesheet" href="../../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../../static.files/rustdoc-b0742ba02757f159.css"><meta name="rustdoc-vars" data-root-path="../../../" data-static-root-path="../../../static.files/" data-current-crate="hotstuff_rs" data-themes="" data-resource-suffix="" data-rustdoc-version="1.83.0 (90b35a623 2024-11-26)" data-channel="1.83.0" data-search-js="search-f0d225181b97f9a4.js" data-settings-js="settings-805db61a62df4bd2.js" ><script src="../../../static.files/storage-1d39b6787ed640ff.js"></script><script defer src="../../../static.files/src-script-e66d777a5a92e9b2.js"></script><script defer src="../../../src-files.js"></script><script defer src="../../../static.files/main-f070b9041d14864c.js"></script><noscript><link rel="stylesheet" href="../../../static.files/noscript-0111fcff984fae8f.css"></noscript><link rel="alternate icon" type="image/png" href="../../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc src"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="src-sidebar-title"><h2>Files</h2></div></nav><div class="sidebar-resizer"></div><main><rustdoc-search></rustdoc-search><section id="main-content" class="content"><div class="main-heading"><h1><div class="sub-heading">hotstuff_rs/pacemaker/</div>protocol.rs</h1><rustdoc-toolbar></rustdoc-toolbar></div><div class="example-wrap"><div data-nosnippet><pre class="src-line-numbers">
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/pacemaker/implementation.rs`."><title>implementation.rs - source</title><script>if(window.location.protocol!=="file:")document.head.insertAdjacentHTML("beforeend","SourceSerif4-Regular-46f98efaafac5295.ttf.woff2,FiraSans-Regular-018c141bf0843ffd.woff2,FiraSans-Medium-8f9a781e4970d388.woff2,SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2,SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2".split(",").map(f=>`<link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/${f}">`).join(""))</script><link rel="stylesheet" href="../../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../../static.files/rustdoc-b0742ba02757f159.css"><meta name="rustdoc-vars" data-root-path="../../../" data-static-root-path="../../../static.files/" data-current-crate="hotstuff_rs" data-themes="" data-resource-suffix="" data-rustdoc-version="1.83.0 (90b35a623 2024-11-26)" data-channel="1.83.0" data-search-js="search-f0d225181b97f9a4.js" data-settings-js="settings-805db61a62df4bd2.js" ><script src="../../../static.files/storage-1d39b6787ed640ff.js"></script><script defer src="../../../static.files/src-script-e66d777a5a92e9b2.js"></script><script defer src="../../../src-files.js"></script><script defer src="../../../static.files/main-f070b9041d14864c.js"></script><noscript><link rel="stylesheet" href="../../../static.files/noscript-0111fcff984fae8f.css"></noscript><link rel="alternate icon" type="image/png" href="../../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc src"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="src-sidebar-title"><h2>Files</h2></div></nav><div class="sidebar-resizer"></div><main><rustdoc-search></rustdoc-search><section id="main-content" class="content"><div class="main-heading"><h1><div class="sub-heading">hotstuff_rs/pacemaker/</div>implementation.rs</h1><rustdoc-toolbar></rustdoc-toolbar></div><div class="example-wrap"><div data-nosnippet><pre class="src-line-numbers">
 <a href="#1" id="1">1</a>
 <a href="#2" id="2">2</a>
 <a href="#3" id="3">3</a>
@@ -756,71 +756,14 @@
 <a href="#755" id="755">755</a>
 <a href="#756" id="756">756</a>
 <a href="#757" id="757">757</a>
-<a href="#758" id="758">758</a>
-<a href="#759" id="759">759</a>
-<a href="#760" id="760">760</a>
-<a href="#761" id="761">761</a>
-<a href="#762" id="762">762</a>
-<a href="#763" id="763">763</a>
-<a href="#764" id="764">764</a>
-<a href="#765" id="765">765</a>
-<a href="#766" id="766">766</a>
-<a href="#767" id="767">767</a>
-<a href="#768" id="768">768</a>
-<a href="#769" id="769">769</a>
-<a href="#770" id="770">770</a>
-<a href="#771" id="771">771</a>
-<a href="#772" id="772">772</a>
-<a href="#773" id="773">773</a>
-<a href="#774" id="774">774</a>
-<a href="#775" id="775">775</a>
-<a href="#776" id="776">776</a>
-<a href="#777" id="777">777</a>
-<a href="#778" id="778">778</a>
-<a href="#779" id="779">779</a>
-<a href="#780" id="780">780</a></pre></div><pre class="rust"><code><span class="comment">/*
+<a href="#758" id="758">758</a></pre></div><pre class="rust"><code><span class="comment">/*
     Copyright © 2023, ParallelChain Lab
     Licensed under the Apache License, Version 2.0: http://www.apache.org/licenses/LICENSE-2.0
 */
 
-</span><span class="doccomment">//! Implementation of the Pacemaker protocol, based on the
-//! [Lewis-Pye View Synchronisation protocol](https://arxiv.org/pdf/2201.01107.pdf) and the Interleaved
-//! Weighted Round Robin leader selection mechanism.
+</span><span class="doccomment">//! Event-driven implementation of the Pacemaker subprotocol.
 //!
-//! The liveness of the HotStuff protocol is dependent on the Pacemaker module, which regulates how and
-//! when a replica advances its view, as well as determines which validator shall act as the leader of
-//! a given view.
-//!
-//! ## View Synchronisation
-//!
-//! The goal is to ensure that at any point all honest replicas should eventually end up in the same
-//! view and stay there for long enough to enable consensus through forming a PC. Just like the HotStuff
-//! SMR, the Pacemaker protocol is Byzantine Fault Tolerant: eventual succesful view synchronization is
-//! guaranteed in the presence of n = 3f + 1 validators where at most f validators are Byzantine.
-//!
-//! The Lewis-Pye Pacemaker achieves view synchronisation by dividing the sequence of views into epochs.
-//! The mechanism for advancing the view depends on whether a view is advanced within the same epoch or
-//! involves epoch change:
-//! 1. All-to-all broadcast in every epoch-change view (i.e., last view of an epoch) upon which replicas
-//!    enter the next epoch and set their timeout deadlines for all views in the next epoch,
-//! 2. Advancing to a next view within the same epoch either on timeout or optimistically on receiving a
-//!    PC for their current view.
-//!
-//! The latter ensures synchronisation when timeouts are set in a uniform manner and when leaders are
-//! honest, and the former serves as a fallback mechanism in case views fall out of sync.
-//!
-//! This protocol deviates from Lewis-Pye in two fundamental ways:
-//! 1. Epoch length is configurable, rather than equal to f+1. This is to enable dynamic validator sets.
-//! 2. [`TimeoutVote`]s include a highest_tc the sender knows. This provides a fallback mechanism for
-//!    helping validators lagging behind on epoch number catch up with the validators ahead.
-//!
-//! ## Leader Selection
-//!
-//! Leaders are selected according to Interleaved Weighted Round Robin algorithm. This ensures that:
-//! 1. The frequency with which a validator is selected as a leader is proportional to the validator's
-//!    power,
-//! 2. Validators are selected as leaders in an interleaved manner: unless a validator has more power
-//!    than any other validator, it will never act as a leader for more than one consecutive view.
+//! Main type: [`Pacemaker`].
 
 </span><span class="kw">use </span>std::{
     collections::BTreeMap,
@@ -853,22 +796,21 @@
     },
 };
 
-<span class="doccomment">/// A Pacemaker protocol for Byzantine View Synchronization inspired by the
-/// [Lewis-Pye View Synchronization protocol](https://arxiv.org/pdf/2201.01107.pdf). Its
-/// [`PacemakerState`] is the authoritative source of information regarding the current view and its
-/// leader, and [`Algorithm`][crate::algorithm::Algorithm] should regularly query the [`Pacemaker`] for
-/// this information ([`ViewInfo`]), and propagate the information to [`hotstuff`](crate::hotstuff).
+<span class="doccomment">/// A single participant in the Pacemaker subprotocol.
 ///
-/// The Pacemaker exposes the following API for use in the Algorithm:
-/// 1. [Pacemaker::new]: creates a fresh instance of the [`Pacemaker`],
-/// 2. [Pacemaker::view_info]: queries the Pacemaker for [`ViewInfo`], which can be used to determine
-///    whether the view should be updated,
-/// 3. [Pacemaker::tick]: updates the internal state of the Pacemaker and broadcasts a message if needed
-///    in response to a time measurement,
-/// 4. [Pacemaker::on_receive_msg]: updates the [`PacemakerState`] and possibly the block tree, as well
-///    as broadcasts messages, in response to a received [`PacemakerMessage`].
+/// # Usage
 ///
-/// If any of these actions fail, a [`PacemakerError`] is returned.
+/// After creating an instance of the `Pacemaker` struct using [`new`](Self::new), the caller interacts
+/// with it by calling three methods:
+///
+/// After creating an instance of `Pacemaker` using [`new`](Self::new), the caller should interact with
+/// it by calling three methods:
+/// 1. [`on_receive_msg`](Self::on_receive_msg): this method should be called whenever a `PacemakerMessage`
+///    is received satisfying the method's [preconditions](Self::on_receive_msg#preconditions).
+/// 2. [`tick`](Self::tick): this method should be called *as often as is practical*.
+/// 3. [`query`](Self::query): whenever `on_receive_msg` or `tick` is called, the internal view counter of
+///    the `Pacemaker` may be updated. The caller should call `query` whenever it needs to see this
+///    counter.
 </span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">struct </span>Pacemaker&lt;N: Network&gt; {
     config: PacemakerConfiguration,
     state: PacemakerState,
@@ -878,7 +820,7 @@
 }
 
 <span class="kw">impl</span>&lt;N: Network&gt; Pacemaker&lt;N&gt; {
-    <span class="doccomment">/// Create a new [`Pacemaker`] instance.
+    <span class="doccomment">/// Create a new `Pacemaker` instance..
     </span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>new(
         config: PacemakerConfiguration,
         sender: SenderHandle&lt;N&gt;,
@@ -902,25 +844,13 @@
         })
     }
 
-    <span class="doccomment">/// Query the pacemaker for [`ViewInfo`].
-    </span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>view_info(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span>ViewInfo {
+    <span class="doccomment">/// Query the Pacemaker for its current `ViewInfo`.
+    </span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>query(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span>ViewInfo {
         <span class="kw-2">&amp;</span><span class="self">self</span>.view_info
     }
 
-    <span class="doccomment">/// Check the current time ('clock tick'), and possibly send messages and update the
-    /// [internal state of the pacemaker][PacemakerState] in response to the 'clock tick'.
-    ///
-    /// First, in response to a clock tick indicating a view timeout the state can be updated in two ways:
-    /// 1. If it is an epoch-change view, then its deadline should be extended, and a timeout vote should
-    ///    be broadcasted.
-    /// 2. If it is a not an epoch-change view, then the view should be updated to the subsequent view.
-    ///
-    /// Additionally, tick should check if there is a PC for the current view (whether an epoch-change
-    /// view or not) available in the block tree, and if so it should broadcast the PC in an advance
-    /// view message.
-    ///
-    /// It should also check of the validator set state has been updated, and if so it should update the
-    /// timeout vote collectors accordingly.
+    <span class="doccomment">/// Cause the Pacemaker to check the current time ("clock tick"), possibly updating its internal state
+    /// or causing it to send messages to other replicas.
     </span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>tick&lt;K: KVStore&gt;(
         <span class="kw-2">&amp;mut </span><span class="self">self</span>,
         block_tree: <span class="kw-2">&amp;</span>BlockTreeSingleton&lt;K&gt;,
@@ -928,7 +858,7 @@
         <span class="kw">let </span>cur_view = <span class="self">self</span>.view_info.view;
         <span class="kw">let </span>validator_set_state = block_tree.validator_set_state()<span class="question-mark">?</span>;
 
-        <span class="comment">// 1. Check if the current view has timed out, and proceed accordingly.
+        <span class="comment">// 1. Check if the current view has timed out.
         </span><span class="kw">if </span>Instant::now() &gt; <span class="self">self</span>.view_info.deadline {
             Event::ViewTimeout(ViewTimeoutEvent {
                 timestamp: SystemTime::now(),
@@ -936,7 +866,8 @@
             })
             .publish(<span class="kw-2">&amp;</span><span class="self">self</span>.event_publisher);
 
-            <span class="kw">if </span>is_epoch_change_view(<span class="kw-2">&amp;</span>cur_view, <span class="self">self</span>.config.epoch_length) {
+            <span class="comment">// 1.1. If the current view is an Epoch-Change view, broadcast a `TimeoutVote`, then extend the view.
+            </span><span class="kw">if </span>is_epoch_change_view(<span class="kw-2">&amp;</span>cur_view, <span class="self">self</span>.config.epoch_length) {
                 <span class="kw">if </span>is_validator(<span class="kw-2">&amp;</span><span class="self">self</span>.config.keypair.public(), <span class="kw-2">&amp;</span>validator_set_state) {
                     <span class="kw">let </span>pacemaker_message = PacemakerMessage::timeout_vote(
                         <span class="kw-2">&amp;</span><span class="self">self</span>.config.keypair,
@@ -954,7 +885,12 @@
                         .publish(<span class="kw-2">&amp;</span><span class="self">self</span>.event_publisher)
                     }
                 }
-                <span class="self">self</span>.extend_view()<span class="question-mark">?
+
+                <span class="comment">// We extend the view timeout so that we will broadcast a `TimeoutVote` when this view times out again.
+                </span><span class="self">self</span>.extend_view()<span class="question-mark">?
+
+            </span><span class="comment">// 1.2. Else, if the current view is not a normal view, simply update the Pacemaker instance's local
+            // view the next view.
             </span>} <span class="kw">else </span>{
                 <span class="self">self</span>.update_view(cur_view + <span class="number">1</span>, <span class="kw-2">&amp;</span>validator_set_state)<span class="question-mark">?</span>;
             }
@@ -962,15 +898,15 @@
             <span class="kw">return </span><span class="prelude-val">Ok</span>(());
         }
 
-        <span class="comment">// 2. Check if the timeout vote collectors need to be updated in response to a validator set
-        //    state update.
+        <span class="comment">// 2. Update the Pacemaker's timeout vote Collector Pair if the current active validator sets have
+        // changed.
         </span><span class="kw">let _ </span>= <span class="self">self
             </span>.state
             .timeout_vote_collectors
             .update_validator_sets(<span class="kw-2">&amp;</span>validator_set_state);
 
-        <span class="comment">// 3. Check if a PC for the current view is available and if I am a validator, and if so
-        //    broadcast an advance view message.
+        <span class="comment">// 3. If the current Highest PC in the block tree is for the current view or a higher view, and we have
+        //    not sent an AdvanceView message in the current view, broadcast a new one with the Highest PC.
         </span><span class="kw">if </span>block_tree.highest_pc()<span class="question-mark">?</span>.view &gt;= cur_view
             &amp;&amp; !block_tree.highest_pc()<span class="question-mark">?</span>.is_genesis_pc()
             &amp;&amp; is_validator(<span class="kw-2">&amp;</span><span class="self">self</span>.config.keypair.public(), <span class="kw-2">&amp;</span>validator_set_state)
@@ -989,16 +925,20 @@
                 })
                 .publish(<span class="kw-2">&amp;</span><span class="self">self</span>.event_publisher)
             }
-            <span class="self">self</span>.state.last_advance_view = <span class="prelude-val">Some</span>(<span class="self">self</span>.view_info.view);
+
+            <span class="comment">// Record in the internal state that we have broadcasted an `AdvanceView` message in this view.
+            </span><span class="self">self</span>.state.last_advance_view = <span class="prelude-val">Some</span>(<span class="self">self</span>.view_info.view);
         }
 
         <span class="prelude-val">Ok</span>(())
     }
 
-    <span class="doccomment">/// Update the internal state of the pacemaker and possibly the block tree, in response to receiving a
-    /// [`PacemakerMessage`]. Broadcast an [`AdvanceView`] message in case a
-    /// [`TimeoutCertificate`][crate::pacemaker::types::TimeoutCertificate] was collected, or in case a valid
-    /// AdvanceView message was received from a peer.
+    <span class="doccomment">/// Execute the required steps in the Pacemaker subprotocol upon receiving a `PacemakerMessage` from the
+    /// replica identified by `origin`.
+    ///
+    /// # Precondition
+    ///
+    /// [`msg.view()`](PacemakerMessage::view) must be greater than or equal to the current view.
     </span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>on_receive_msg&lt;K: KVStore&gt;(
         <span class="kw-2">&amp;mut </span><span class="self">self</span>,
         msg: PacemakerMessage,
@@ -1016,39 +956,37 @@
         <span class="prelude-val">Ok</span>(())
     }
 
-    <span class="doccomment">/// Update the [internal state of the pacemaker][PacemakerState] in response to receiving a
-    /// [`TimeoutVote`].
+    <span class="doccomment">/// Execute the required steps in the Pacemaker subprotocol upon receiving a `TimeoutVote` message from
+    /// the replica identified by `origin`.
     ///
-    /// If a [`TimeoutCertificate`][crate::pacemaker::types::TimeoutCertificate] is collected, the replica
-    /// should try to update its `highest_tc` and broadcast the collected `TimeoutCertificate`. The vote may
-    /// be rejected if the receiver replica is lagging behind the quorum from which the vote is sent. In
-    /// such case the replica can use the sender's `highest_tc` attached to the vote to move ahead.
+    /// # Precondition
     ///
-    /// ## Preconditions
-    ///
-    /// The Timeout Vote may be for any view greater or equal to the current view, but only timeout votes
-    /// for the current view will be collected.
+    /// `timeout_vote.view &gt;= self.query().view`
     </span><span class="kw">fn </span>on_receive_timeout_vote&lt;K: KVStore&gt;(
         <span class="kw-2">&amp;mut </span><span class="self">self</span>,
         timeout_vote: TimeoutVote,
-        signer: <span class="kw-2">&amp;</span>VerifyingKey,
+        origin: <span class="kw-2">&amp;</span>VerifyingKey,
         block_tree: <span class="kw-2">&amp;mut </span>BlockTreeSingleton&lt;K&gt;,
     ) -&gt; <span class="prelude-ty">Result</span>&lt;(), PacemakerError&gt; {
         Event::ReceiveTimeoutVote(ReceiveTimeoutVoteEvent {
             timestamp: SystemTime::now(),
-            origin: signer.clone(),
+            origin: origin.clone(),
             timeout_vote: timeout_vote.clone(),
         })
         .publish(<span class="kw-2">&amp;</span><span class="self">self</span>.event_publisher);
 
-        <span class="comment">// If we are not a validator, ignore the Timeout Vote.
+        <span class="comment">// 1. If the sending replica is not a validator, ignore its TimeoutVote.
+        //
+        // TODO: even though as a non-validator we do not need to collect `TimeoutVote`s into
+        //       `TimeoutCertificate`s, it is still a good idea to at least inspect `timeout_vote.highest_tc`.
         </span><span class="kw">let </span>validator_set_state = block_tree.validator_set_state()<span class="question-mark">?</span>;
-        <span class="kw">if </span>!is_validator(signer, <span class="kw-2">&amp;</span>validator_set_state) {
+        <span class="kw">if </span>!is_validator(origin, <span class="kw-2">&amp;</span>validator_set_state) {
             <span class="kw">return </span><span class="prelude-val">Ok</span>(());
         };
 
-        <span class="comment">// Check whether the Timeout Vote is cryptographically correct and that the current view is an epoch-change view.
-        </span><span class="kw">if </span>timeout_vote.is_correct(signer)
+        <span class="comment">// 2. Check whether the `TimeoutVote` is cryptographically correct and the current view is an Epoch-Change
+        //    View.
+        </span><span class="kw">if </span>timeout_vote.is_correct(origin)
             &amp;&amp; is_epoch_change_view(<span class="kw-2">&amp;</span>timeout_vote.view, <span class="self">self</span>.config.epoch_length)
         {
             <span class="kw">let </span>fallback_tc = <span class="kw">match </span><span class="kw-2">&amp;</span>timeout_vote.highest_tc {
@@ -1056,11 +994,11 @@
                 <span class="kw">_ </span>=&gt; <span class="prelude-val">None</span>,
             };
 
-            <span class="comment">// Try to collect the Timeout Vote to create a new Timeout Certificate.
+            <span class="comment">// 3. Try to collect the TimeoutVote into a new `TimeoutCertificate`.
             </span><span class="kw">if let </span><span class="prelude-val">Some</span>(new_tc) = <span class="self">self
                 </span>.state
                 .timeout_vote_collectors
-                .collect(signer, timeout_vote)
+                .collect(origin, timeout_vote)
             {
                 Event::CollectTC(CollectTCEvent {
                     timestamp: SystemTime::now(),
@@ -1068,10 +1006,10 @@
                 })
                 .publish(<span class="kw-2">&amp;</span><span class="self">self</span>.event_publisher);
 
-                <span class="comment">// If a newly collected Timeout Certificate has a higher view than `highest_tc`, update `highest_tc`.
+                <span class="comment">// 3.1. If a newly collected Timeout Certificate has a higher view than `highest_tc`, update `highest_tc`.
                 //
                 // Note: we do not call `update_view` in this conditional block. We will call it when we receive an
-                // Advance View message (e.g., the Advance View message we may send out in this conditional block).
+                //       AdvanceView message (e.g., the AdvanceView message we may send out in this conditional block).
                 </span><span class="kw">if </span>block_tree.highest_tc()<span class="question-mark">?</span>.is_none()
                     || new_tc.view &gt; block_tree.highest_tc()<span class="question-mark">?</span>.unwrap().view
                 {
@@ -1084,14 +1022,14 @@
                     })
                     .publish(<span class="kw-2">&amp;</span><span class="self">self</span>.event_publisher);
 
-                    <span class="comment">// If I am a validator and I haven't broadcasted an Advance View message in the current view, broadcast
-                    // an Advance View message containing the newly collected Timeout Certificate.
+                    <span class="comment">// 3.2. If we are a validator and we haven't broadcasted an AdvanceView message in the current view,
+                    //      broadcast an AdvanceView message containing the newly collected TimeoutCertificate.
                     </span><span class="kw">if </span>is_validator(<span class="kw-2">&amp;</span><span class="self">self</span>.config.keypair.public(), <span class="kw-2">&amp;</span>validator_set_state)
-                        &amp;&amp; (<span class="self">self</span>.state.last_advance_view.is_none()
-                            || <span class="self">self
-                                </span>.state
-                                .last_advance_view
-                                .is_some_and(|v| v &lt; <span class="self">self</span>.view_info.view))
+                        &amp;&amp; <span class="self">self</span>.state.last_advance_view.is_none()
+                        || <span class="self">self
+                            </span>.state
+                            .last_advance_view
+                            .is_some_and(|v| v &lt; <span class="self">self</span>.view_info.view)
                     {
                         <span class="kw">let </span>pacemaker_message = PacemakerMessage::advance_view(
                             ProgressCertificate::TimeoutCertificate(new_tc),
@@ -1109,7 +1047,7 @@
                     }
                 }
 
-            <span class="comment">// If we fail to collect a new Timeout Certificate, process the `fallback_tc` in the vote.
+            <span class="comment">// 4. Else, if we fail to collect a new TimeoutCertificate, process the `fallback_tc` in the vote.
             </span>} <span class="kw">else if let </span><span class="prelude-val">Some</span>(tc) = fallback_tc {
                 <span class="comment">// In case the replica is behind, the "fallback tc" contained in the timeout vote message
                 // serves to prove to it that a quorum is ahead and lets the replica catch up.
@@ -1132,12 +1070,11 @@
         <span class="prelude-val">Ok</span>(())
     }
 
-    <span class="doccomment">/// Update the [internal state of the pacemaker][PacemakerState] and possibly the block tree in response
-    /// to receiving an [`AdvanceView`] message.
+    <span class="doccomment">/// Execute the required steps in the Pacemaker protocol upon receiving an `AdvanceView` message.
     ///
     /// ## Preconditions
     ///
-    /// The Advance View message must be for the current or higher view.
+    /// `advance_view.progress_certificate.view() &gt;= self.query().view`
     </span><span class="kw">fn </span>on_receive_advance_view&lt;K: KVStore&gt;(
         <span class="kw-2">&amp;mut </span><span class="self">self</span>,
         advance_view: AdvanceView,
@@ -1151,15 +1088,13 @@
         })
         .publish(<span class="kw-2">&amp;</span><span class="self">self</span>.event_publisher);
 
-        <span class="comment">// If the sender is not a validator, ignore the Advance View.
+        <span class="comment">// 1. If the `origin` is not a validator, ignore the `AdvanceView` message.
         </span><span class="kw">let </span>validator_set_state = block_tree.validator_set_state()<span class="question-mark">?</span>;
         <span class="kw">if </span>!is_validator(origin, <span class="kw-2">&amp;</span>validator_set_state) {
             <span class="kw">return </span><span class="prelude-val">Ok</span>(());
         }
 
-        <span class="comment">// Check whether the progress certificate contained in the Advance View message is "valid". What this
-        // entails differs depending on whether the certificate is a Phase Certificate or a Timeout
-        // Certificate.
+        <span class="comment">// 2. Check whether the progress certificate contained in the Advance View message is "valid".
         </span><span class="kw">let </span>progress_certificate = advance_view.progress_certificate.clone();
         <span class="kw">let </span>is_valid = <span class="kw">match </span><span class="kw-2">&amp;</span>progress_certificate {
             ProgressCertificate::PhaseCertificate(pc) =&gt; pc.is_correct(block_tree)<span class="question-mark">?</span>,
@@ -1170,11 +1105,11 @@
         };
 
         <span class="kw">if </span>is_valid {
-            <span class="comment">// If the received certificate is a Timeout Certificate and has a higher view number than `highest_tc`,
-            // update the `highest_tc`.
+            <span class="comment">// 3. If the received certificate is a TimeoutCertificate and has a higher view number than `highest_tc`,
+            //    update the `highest_tc`.
             //
             // Note: we do not update `highest_pc` here, since checking the safety of PCs and updating `highest_pc`
-            // is a responsibility of the HotStuff sub-protocol.
+            //       is a responsibility of the HotStuff sub-protocol.
             </span><span class="kw">if let </span>ProgressCertificate::TimeoutCertificate(tc) = <span class="kw-2">&amp;</span>progress_certificate {
                 <span class="kw">if </span>block_tree.highest_tc()<span class="question-mark">?</span>.is_none()
                     || tc.view &gt; block_tree.highest_tc()<span class="question-mark">?</span>.unwrap().view
@@ -1188,8 +1123,8 @@
                 }
             };
 
-            <span class="comment">// If I am a validator and I haven't broadcasted an Advance View message in the current view,
-            // re-broadcast the received Advance View message.
+            <span class="comment">// 4. If we are a validator and we haven't broadcasted an AdvanceView message in the current view,
+            //    re-broadcast the received AdvanceView message.
             </span><span class="kw">if </span>is_validator(
                 <span class="kw-2">&amp;</span><span class="self">self</span>.config.keypair.public(),
                 <span class="kw-2">&amp;</span>block_tree.validator_set_state()<span class="question-mark">?</span>,
@@ -1211,7 +1146,7 @@
                 <span class="self">self</span>.state.last_advance_view = <span class="prelude-val">Some</span>(<span class="self">self</span>.view_info.view);
             }
 
-            <span class="comment">// Check if about to enter a new epoch, and if so then set the timeouts for the new epoch.
+            <span class="comment">// 5. Check if about to enter a new epoch, and if so then set the timeouts for the new epoch.
             </span><span class="kw">let </span>next_view = progress_certificate.view() + <span class="number">1</span>;
             <span class="self">self</span>.update_view(next_view, <span class="kw-2">&amp;</span>validator_set_state)<span class="question-mark">?
         </span>}
@@ -1219,13 +1154,9 @@
         <span class="prelude-val">Ok</span>(())
     }
 
-    <span class="doccomment">/// Update the current view to the specified `next_view`. This may involve setting timeouts for the
-    /// views of a new epoch, in case the next view is in a future epoch.
+    <span class="doccomment">/// Update the Pacemaker's state in order to enter a specified `next_view`.
     ///
-    /// This method, by being the unique method used to update the pacemaker [`ViewInfo`], and checking if the
-    /// next view is greater than the current view, guarantees that views are monotonically increasing.
-    ///
-    /// ## Errors
+    /// # Preconditions
     ///
     /// This function should only be called if `next_view` is greater than the current view. Otherwise, an
     /// [`UpdateViewError`] will be returned.
@@ -1235,7 +1166,10 @@
         validator_set_state: <span class="kw-2">&amp;</span>ValidatorSetState,
     ) -&gt; <span class="prelude-ty">Result</span>&lt;(), PacemakerError&gt; {
         <span class="kw">let </span>cur_view = <span class="self">self</span>.view_info.view;
-        <span class="kw">if </span>next_view &lt;= cur_view {
+
+        <span class="comment">// 1. Return an error if the precondition that `next_view` must be greater than the current view is
+        //    violated.
+        </span><span class="kw">if </span>next_view &lt;= cur_view {
             <span class="kw">return </span><span class="prelude-val">Err</span>(UpdateViewError::NonIncreasingViewError {
                 cur_view,
                 next_view,
@@ -1243,12 +1177,12 @@
             .into());
         }
 
-        <span class="comment">// If about to enter a new epoch, set timeouts for the new epoch.
+        <span class="comment">// 2. If about to enter a new epoch, set timeouts for the new epoch.
         </span><span class="kw">if </span>epoch(cur_view, <span class="self">self</span>.config.epoch_length) != epoch(next_view, <span class="self">self</span>.config.epoch_length) {
-            <span class="self">self</span>.state.set_timeouts(next_view, <span class="kw-2">&amp;</span><span class="self">self</span>.config)
+            <span class="self">self</span>.state.update_timeouts(next_view, <span class="kw-2">&amp;</span><span class="self">self</span>.config);
         }
 
-        <span class="comment">// Update the view.
+        <span class="comment">// 3. Update the Pacemaker's `view_info` state.
         </span><span class="self">self</span>.view_info = ViewInfo::new(
             next_view,
             <span class="kw-2">*</span><span class="self">self
@@ -1258,7 +1192,7 @@
                 .ok_or(UpdateViewError::GetViewTimeoutError { view: next_view })<span class="question-mark">?</span>,
         );
 
-        <span class="comment">// Update the timeout vote collectors.
+        <span class="comment">// 4. Replace our current `timeout_vote_collectors` with new ones for the view we just entered.
         </span><span class="self">self</span>.state.timeout_vote_collectors = &lt;ActiveCollectorPair&lt;TimeoutVoteCollector&gt;&gt;::new(
             <span class="self">self</span>.config.chain_id,
             next_view,
@@ -1268,14 +1202,14 @@
         <span class="prelude-val">Ok</span>(())
     }
 
-    <span class="doccomment">/// Extend the timeout of the current view
+    <span class="doccomment">/// Extend the timeout of the current view, which must be an Epoch-Change View.
     ///
     /// # Errors
     ///
-    /// This function should only be called if the current view is an epoch-change view. Otherwise, an
+    /// This function should only be called if the current view is an Epoch-Change View. Otherwise, an
     /// [`ExtendViewError`] will be returned.
     </span><span class="kw">fn </span>extend_view(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span>&lt;(), ExtendViewError&gt; {
-        <span class="comment">// Confirm that the current view is an epoch-change view.
+        <span class="comment">// 1. Confirm that the current view is an Epoch-Change View.
         </span><span class="kw">let </span>cur_view = <span class="self">self</span>.view_info.view;
         <span class="kw">if </span>!is_epoch_change_view(<span class="kw-2">&amp;</span>cur_view, <span class="self">self</span>.config.epoch_length) {
             <span class="kw">return </span><span class="prelude-val">Err</span>(ExtendViewError::TriedToExtendNonEpochView {
@@ -1283,50 +1217,82 @@
             });
         };
 
-        <span class="self">self</span>.state
-            .extend_epoch_view_timeout(<span class="self">self</span>.view_info.view, <span class="kw-2">&amp;</span><span class="self">self</span>.config);
-        <span class="kw">let </span>new_timeout = <span class="self">self
+        <span class="comment">// 2. Increase the timeout of the current view inside `PacemakerState`.
+        </span><span class="self">self</span>.state
+            .extend_epoch_change_view_timeout(<span class="self">self</span>.view_info.view, <span class="kw-2">&amp;</span><span class="self">self</span>.config);
+
+        <span class="comment">// 3. Increase the timeout of the current view inside `ViewInfo`.
+        </span><span class="kw">let </span>new_timeout = <span class="self">self
             </span>.state
             .timeouts
             .get(<span class="kw-2">&amp;</span>cur_view)
             .ok_or(ExtendViewError::GetViewTimeoutError { view: cur_view })<span class="question-mark">?</span>;
         <span class="self">self</span>.view_info = <span class="self">self</span>.view_info.with_new_timeout(<span class="kw-2">*</span>new_timeout);
+
         <span class="prelude-val">Ok</span>(())
     }
 }
 
-<span class="doccomment">/// Immutable parameters that determine the behaviour of the [`Pacemaker`] and should never change after
-/// a replica starts.
+<span class="doccomment">/// Configuration variables for the [`Pacemaker`] struct.
 </span><span class="attr">#[derive(Clone)]
 </span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">struct </span>PacemakerConfiguration {
-    <span class="kw">pub</span>(<span class="kw">crate</span>) chain_id: ChainID,
-    <span class="kw">pub</span>(<span class="kw">crate</span>) keypair: Keypair,
-    <span class="kw">pub</span>(<span class="kw">crate</span>) epoch_length: EpochLength,
+    <span class="doccomment">/// The Chain ID of the blockchain that the current replica is to track.
+    </span><span class="kw">pub</span>(<span class="kw">crate</span>) chain_id: ChainID,
 
-    <span class="comment">// How much time can elapse in a view before timing out.
+    <span class="doccomment">/// The keypair with which the Pacemaker implementation should sign `TimeoutVote`s.
+    </span><span class="kw">pub</span>(<span class="kw">crate</span>) keypair: Keypair,
+
+    <span class="doccomment">/// How many views are in an epoch.
+    </span><span class="kw">pub</span>(<span class="kw">crate</span>) epoch_length: EpochLength,
+
+    <span class="doccomment">/// How much time can elapse in a view before it times out.
     </span><span class="kw">pub</span>(<span class="kw">crate</span>) max_view_time: Duration,
 }
 
-<span class="doccomment">/// Internal state of the [`Pacemaker`]. Keeps track of the timeouts allocated to current and future views
-/// (if any), and the [timeout votes][TimeoutVote] collected for the current view.
+<span class="doccomment">/// In-memory state of a [`Pacemaker`].
 </span><span class="kw">struct </span>PacemakerState {
-    timeouts: BTreeMap&lt;ViewNumber, Instant&gt;,
-    timeout_vote_collectors: ActiveCollectorPair&lt;TimeoutVoteCollector&gt;,
+    <span class="doccomment">/// Mapping between current and future view numbers and the timeout assigned to each.
+    </span>timeouts: BTreeMap&lt;ViewNumber, Instant&gt;,
 
-    <span class="comment">// The view in which this replica last broadcasted an Advance View message.
+    <span class="doccomment">/// `TimeoutVoteCollector`s for the at-most two validator sets that are active in the current view.
+    </span>timeout_vote_collectors: ActiveCollectorPair&lt;TimeoutVoteCollector&gt;,
+
+    <span class="doccomment">/// The view in which this replica last broadcasted an [`AdvanceView`] message.
     </span>last_advance_view: <span class="prelude-ty">Option</span>&lt;ViewNumber&gt;,
 }
 
 <span class="kw">impl </span>PacemakerState {
-    <span class="doccomment">/// Initializes the [`PacemakerState`] on starting the protocol. Should only be called at the start of
-    /// the protocol.
+    <span class="doccomment">/// Initializes a `PacemakerState` upon starting the Pacemaker subprotocol.
     </span><span class="kw">fn </span>initialize(
         config: <span class="kw-2">&amp;</span>PacemakerConfiguration,
         init_view: ViewNumber,
         validator_set_state: <span class="kw-2">&amp;</span>ValidatorSetState,
     ) -&gt; <span class="self">Self </span>{
+        <span class="doccomment">/// Return initial timeouts on starting the protocol from a given `start_view`.
+        </span><span class="kw">fn </span>initial_timeouts(
+            start_view: ViewNumber,
+            config: <span class="kw-2">&amp;</span>PacemakerConfiguration,
+        ) -&gt; BTreeMap&lt;ViewNumber, Instant&gt; {
+            <span class="kw">let </span><span class="kw-2">mut </span>timeouts = BTreeMap::new();
+
+            <span class="kw">let </span>epoch = epoch(start_view, config.epoch_length);
+            <span class="kw">let </span>epoch_view = epoch * config.epoch_length.int() <span class="kw">as </span>u64;
+
+            <span class="kw">let </span>start_time = Instant::now();
+
+            <span class="comment">// Add timeouts for all remaining views in the epoch of start_view.
+            </span><span class="kw">for </span>view <span class="kw">in </span>start_view.int()..=epoch_view {
+                <span class="kw">let </span>time_to_view_deadline = Duration::from_secs(
+                    config.max_view_time.as_secs() * (view - start_view.int() + <span class="number">1</span>),
+                );
+                timeouts.insert(ViewNumber::new(view), start_time + time_to_view_deadline);
+            }
+
+            timeouts
+        }
+
         <span class="self">Self </span>{
-            timeouts: <span class="self">Self</span>::initial_timeouts(init_view, config),
+            timeouts: initial_timeouts(init_view, config),
             timeout_vote_collectors: &lt;ActiveCollectorPair&lt;TimeoutVoteCollector&gt;&gt;::new(
                 config.chain_id,
                 init_view,
@@ -1336,71 +1302,58 @@
         }
     }
 
-    <span class="doccomment">/// Return initial timeouts on starting the protocol from a given start view.
-    </span><span class="kw">fn </span>initial_timeouts(
-        start_view: ViewNumber,
-        config: <span class="kw-2">&amp;</span>PacemakerConfiguration,
-    ) -&gt; BTreeMap&lt;ViewNumber, Instant&gt; {
-        <span class="kw">let </span><span class="kw-2">mut </span>timeouts = BTreeMap::new();
+    <span class="doccomment">/// Update the `PacemakerState`'s timeouts upon entering the epoch with the given `epoch_start_view`.
+    </span><span class="kw">fn </span>update_timeouts(<span class="kw-2">&amp;mut </span><span class="self">self</span>, epoch_start_view: ViewNumber, config: <span class="kw-2">&amp;</span>PacemakerConfiguration) {
+        <span class="comment">// Remove timeouts for expired views.
+        </span><span class="self">self</span>.timeouts = <span class="self">self</span>.timeouts.split_off(<span class="kw-2">&amp;</span>epoch_start_view);
 
-        <span class="kw">let </span>epoch = epoch(start_view, config.epoch_length);
-        <span class="kw">let </span>epoch_view = epoch * config.epoch_length.int() <span class="kw">as </span>u64;
+        <span class="comment">// Compute the `ViewNumber` of the view that ends the epoch that `epoch_start_view` starts.
+        </span><span class="kw">let </span>epoch_change_view = {
+            <span class="kw">let </span>epoch_num = epoch(epoch_start_view, config.epoch_length);
+            epoch_num * config.epoch_length.int() <span class="kw">as </span>u64
+        };
 
-        <span class="kw">let </span>start_time = Instant::now();
+        <span class="comment">// Set the current time as the epoch's start time.
+        </span><span class="kw">let </span>epoch_start_time = Instant::now();
 
-        <span class="comment">// Add timeouts for all remaining views in the epoch of start_view.
-        </span><span class="kw">for </span>view <span class="kw">in </span>start_view.int()..=epoch_view {
-            <span class="kw">let </span>time_to_view_deadline =
-                Duration::from_secs(config.max_view_time.as_secs() * (view - start_view.int() + <span class="number">1</span>));
-            timeouts.insert(ViewNumber::new(view), start_time + time_to_view_deadline);
-        }
-
-        <span class="kw">return </span>timeouts;
-    }
-
-    <span class="doccomment">/// Set the timeout for each view in the epoch starting from a given view.
-    </span><span class="kw">fn </span>set_timeouts(<span class="kw-2">&amp;mut </span><span class="self">self</span>, start_view: ViewNumber, config: <span class="kw-2">&amp;</span>PacemakerConfiguration) {
-        <span class="comment">// Remove the timeouts for expired views.
-        </span><span class="self">self</span>.timeouts = <span class="self">self</span>.timeouts.split_off(<span class="kw-2">&amp;</span>start_view);
-
-        <span class="kw">let </span>epoch = epoch(start_view, config.epoch_length);
-        <span class="kw">let </span>epoch_view = epoch * config.epoch_length.int() <span class="kw">as </span>u64;
-
-        <span class="kw">let </span>start_time = Instant::now();
-
-        <span class="comment">// Add timeouts for all remaining views in the epoch of start_view.
-        </span><span class="kw">for </span>view <span class="kw">in </span>start_view.int()..=epoch_view {
-            <span class="kw">let </span>time_to_view_deadline =
-                Duration::from_secs(config.max_view_time.as_secs() * (view - start_view.int() + <span class="number">1</span>));
-            <span class="self">self</span>.timeouts
-                .insert(ViewNumber::new(view), start_time + time_to_view_deadline);
+        <span class="comment">// Populate `self.timeouts` with the timeouts of the views in the newly-entered epoch.
+        </span><span class="kw">for </span>view <span class="kw">in </span>epoch_start_view.int()..=epoch_change_view {
+            <span class="kw">let </span>time_to_view_deadline = Duration::from_secs(
+                config.max_view_time.as_secs() * (view - epoch_start_view.int() + <span class="number">1</span>),
+            );
+            <span class="self">self</span>.timeouts.insert(
+                ViewNumber::new(view),
+                epoch_start_time + time_to_view_deadline,
+            );
         }
     }
 
-    <span class="doccomment">/// Extend the timeout of the epoch-change view by another max_view_time.
+    <span class="doccomment">/// Extend the timeout of the `epoch_change_view` by another `config.max_view_time`.
     ///
-    /// Required: The caller must ensure that the view is an epoch-change view.
-    </span><span class="kw">fn </span>extend_epoch_view_timeout(
+    /// # Preconditions
+    ///
+    /// The caller must ensure that `epoch_change_view` is actually an epoch-change view.
+    </span><span class="kw">fn </span>extend_epoch_change_view_timeout(
         <span class="kw-2">&amp;mut </span><span class="self">self</span>,
-        epoch_view: ViewNumber,
+        epoch_change_view: ViewNumber,
         config: <span class="kw-2">&amp;</span>PacemakerConfiguration,
     ) {
         <span class="self">self</span>.timeouts
-            .insert(epoch_view, Instant::now() + config.max_view_time);
+            .insert(epoch_change_view, Instant::now() + config.max_view_time);
     }
 }
 
-<span class="doccomment">/// The pacemaker can fail in two fundamental ways:
-/// 1. In updating the view, which involves creating [`ViewInfo`] for the new view.
-/// 2. In extending its current view, which involves setting a new deadline in its ViewInfo.
-///
-/// Both of these failures correspond to violations of key invariants of the protocol.
-/// Hence, this error is irrecoverable and on seeing it, the caller should panic.
+<span class="doccomment">/// Enumerates the different ways a call to any of [`Pacemaker`]'s methods can fail.
 </span><span class="attr">#[derive(Debug)]
 </span><span class="kw">pub enum </span>PacemakerError {
-    UpdateViewError(UpdateViewError),
-    ExtendViewError(ExtendViewError),
-    BlockTreeError(BlockTreeError),
+    <span class="doccomment">/// See: [`UpdateViewError`].
+    </span>UpdateViewError(UpdateViewError),
+
+    <span class="doccomment">/// See: [`ExtendViewError`].
+    </span>ExtendViewError(ExtendViewError),
+
+    <span class="doccomment">/// See: [`BlockTreeError`]
+    </span>BlockTreeError(BlockTreeError),
 }
 
 <span class="kw">impl </span>From&lt;BlockTreeError&gt; <span class="kw">for </span>PacemakerError {
@@ -1421,33 +1374,33 @@
     }
 }
 
-<span class="doccomment">/// Updating the view can fail in two ways:
-/// 1. If an attempt is made to update the view to a lower view than the current view. If successful,
-///    such action would violate the invariant the views obtained through [Pacemaker::view_info] are
-///    monotonically increasing.
-/// 2. If the timeout for the target view cannot be found in the [`PacemakerState`]. If succesful,
-///    such action would violate the invariant that on providing the current view through
-///    [`Pacemaker::view_info`] the Pacemaker must also provide its deadline.
+<span class="doccomment">/// Enumerates the different ways a [`Pacemaker::update_view`] call can fail.
 </span><span class="attr">#[derive(Debug)]
 </span><span class="kw">pub enum </span>UpdateViewError {
-    NonIncreasingViewError {
-        cur_view: ViewNumber,
-        next_view: ViewNumber,
+    <span class="doccomment">/// An attempt was made to update the current view to a lower view. This violates the invariant that views
+    /// must be monotonically increasing.
+    </span>NonIncreasingViewError {
+        <span class="doccomment">/// The current view.
+        </span>cur_view: ViewNumber,
+
+        <span class="doccomment">/// The lower view that the caller tried to change the current view to.
+        </span>next_view: ViewNumber,
     },
-    GetViewTimeoutError {
-        view: ViewNumber,
-    },
+
+    <span class="doccomment">/// The timeout for a requested view cannot be found in the [`PacemakerState`]. This violates the invariant
+    /// that the `Pacemaker` should be able to provide the timeout of any view it returns from
+    /// [`view_info`](Pacemaker::view_info).
+    </span>GetViewTimeoutError { view: ViewNumber },
 }
 
-<span class="doccomment">/// Extending the view can fail in two ways:
-/// 1. If an attempt is made to extend a view that is not an epoch-change view. If succesful, such
-///    action would violate the invariant that only epoch-change views can be updated.
-/// 2. If the current timeout for the view cannot be obtained from the [`PacemakerState`]. If successful,
-///    such action would violate the invariant that a view can only be extended if its timeout is known.
+<span class="doccomment">/// Enumerates the different ways a [`Pacemaker::extend_view`] call can fail.
 </span><span class="attr">#[derive(Debug)]
 </span><span class="kw">pub enum </span>ExtendViewError {
-    TriedToExtendNonEpochView { view: ViewNumber },
-    GetViewTimeoutError { view: ViewNumber },
+    <span class="doccomment">/// An attempt was made to extend a view that is not an Epoch-Change view.
+    </span>TriedToExtendNonEpochView { view: ViewNumber },
+
+    <span class="doccomment">/// Same as [`UpdateViewError::GetViewTimeoutError`].
+    </span>GetViewTimeoutError { view: ViewNumber },
 }
 
 <span class="doccomment">/// Describes a view (most often the current view), in terms of its view number and its view deadline (the
@@ -1459,7 +1412,8 @@
 }
 
 <span class="kw">impl </span>ViewInfo {
-    <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>new(view: ViewNumber, deadline: Instant) -&gt; <span class="self">Self </span>{
+    <span class="doccomment">/// Create a new `ViewInfo` instance containing the provided parameters.
+    </span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>new(view: ViewNumber, deadline: Instant) -&gt; <span class="self">Self </span>{
         <span class="self">Self </span>{ view, deadline }
     }
 
@@ -1472,8 +1426,10 @@
     }
 }
 
-<span class="doccomment">/// Implements the [Interleaved Weighted Round Robin](https://en.wikipedia.org/wiki/Weighted_round_robin#Interleaved_WRR)
-/// algorithm for selecting a view leader. For internal use by the [`Pacemaker`] and [`PacemakerState`] methods.
+<span class="doccomment">/// Deterministically select a replica in `validator_set` to become the leader of `view` using the
+/// [Interleaved WRR](https://en.wikipedia.org/wiki/Weighted_round_robin#Interleaved_WRR) algorithm.
+///
+/// [Read more](super#leader-selection).
 </span><span class="kw">pub fn </span>select_leader(view: ViewNumber, validator_set: <span class="kw-2">&amp;</span>ValidatorSet) -&gt; VerifyingKey {
     <span class="comment">// Length of the abstract array.
     </span><span class="kw">let </span>p_total = validator_set.total_power();

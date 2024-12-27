@@ -181,25 +181,17 @@
 <a href="#180" id="180">180</a>
 <a href="#181" id="181">181</a>
 <a href="#182" id="182">182</a>
-<a href="#183" id="183">183</a></pre></div><pre class="rust"><code><span class="comment">/*
+<a href="#183" id="183">183</a>
+<a href="#184" id="184">184</a>
+<a href="#185" id="185">185</a>
+<a href="#186" id="186">186</a>
+<a href="#187" id="187">187</a>
+<a href="#188" id="188">188</a></pre></div><pre class="rust"><code><span class="comment">/*
     Copyright © 2023, ParallelChain Lab
     Licensed under the Apache License, Version 2.0: http://www.apache.org/licenses/LICENSE-2.0
 */
 
-</span><span class="doccomment">//! Definitions for structured messages that are sent between replicas as part of the
-//! [`Pacemaker`][crate::pacemaker::protocol::Pacemaker] protocol.
-//!
-//! ## Messages
-//!
-//! The Pacemaker protocol involves two types of messages:
-//! 1. [`TimeoutVote`], which a replica sends to signal to others that its epoch-change view has timed
-//!    out.
-//! 2. [`AdvanceView`], which a replica sends to prove to others that it is safe to move to the next
-//!    view. The proof consists of either:
-//!     - a `PhaseCertificate`, which serves as evidence that progress has been made in the current
-//!       view, or
-//!     - a `TimeoutCertificate`, which serves as evidence that a quorum of replicas have timed out in
-//!       the current view.
+</span><span class="doccomment">//! Messages sent between replicas as part of the Pacemaker subprotocol.
 
 </span><span class="kw">use </span>std::mem;
 
@@ -217,21 +209,28 @@
 
 <span class="kw">use </span><span class="kw">super</span>::types::TimeoutCertificate;
 
-<span class="attr">#[derive(Clone, BorshSerialize, BorshDeserialize)]
+<span class="doccomment">/// Enum wrapper around any kind of message sent between replicas as part of the Pacemaker subprotocol.
+</span><span class="attr">#[derive(Clone, BorshSerialize, BorshDeserialize)]
 </span><span class="kw">pub enum </span>PacemakerMessage {
-    TimeoutVote(TimeoutVote),
-    AdvanceView(AdvanceView),
+    <span class="doccomment">/// See [`TimeoutVote`].
+    </span>TimeoutVote(TimeoutVote),
+
+    <span class="doccomment">/// See [`AdvanceView`].
+    </span>AdvanceView(AdvanceView),
 }
 
 <span class="kw">impl </span>PacemakerMessage {
-    <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>timeout_vote(
-        me: <span class="kw-2">&amp;</span>Keypair,
+    <span class="doccomment">/// Create a [`PacemakerMessage::TimeoutVote`] that indicates that the validator identified by `keypair`
+    /// which is currently replicating the `chain_id` blockchain would like to leave the specified
+    /// Epoch-Change `view`.
+    </span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>timeout_vote(
+        keypair: <span class="kw-2">&amp;</span>Keypair,
         chain_id: ChainID,
         view: ViewNumber,
         highest_tc: <span class="prelude-ty">Option</span>&lt;TimeoutCertificate&gt;,
     ) -&gt; PacemakerMessage {
         <span class="kw">let </span>message = <span class="kw-2">&amp;</span>(chain_id, view).try_to_vec().unwrap();
-        <span class="kw">let </span>signature = me.sign(message);
+        <span class="kw">let </span>signature = keypair.sign(message);
 
         PacemakerMessage::TimeoutVote(TimeoutVote {
             chain_id,
@@ -241,13 +240,17 @@
         })
     }
 
-    <span class="kw">pub fn </span>advance_view(progress_certificate: ProgressCertificate) -&gt; PacemakerMessage {
+    <span class="doccomment">/// Create a [`PacemakerMessage::AdvanceView`] which that to get other replicas to leave
+    /// [`progress_certificate.view()`](ProgressCertificate::view) and enter
+    /// `progress_certificate.view() + 1`.
+    </span><span class="kw">pub fn </span>advance_view(progress_certificate: ProgressCertificate) -&gt; PacemakerMessage {
         PacemakerMessage::AdvanceView(AdvanceView {
             progress_certificate,
         })
     }
 
-    <span class="kw">pub fn </span>chain_id(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; ChainID {
+    <span class="doccomment">/// Get the `ChainID` in the inner message.
+    </span><span class="kw">pub fn </span>chain_id(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; ChainID {
         <span class="kw">match </span><span class="self">self </span>{
             PacemakerMessage::TimeoutVote(TimeoutVote { chain_id, .. }) =&gt; <span class="kw-2">*</span>chain_id,
             PacemakerMessage::AdvanceView(AdvanceView {
@@ -256,7 +259,8 @@
         }
     }
 
-    <span class="kw">pub fn </span>view(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; ViewNumber {
+    <span class="doccomment">/// Get the `ViewNumber` in the inner message.
+    </span><span class="kw">pub fn </span>view(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; ViewNumber {
         <span class="kw">match </span><span class="self">self </span>{
             PacemakerMessage::TimeoutVote(TimeoutVote { view, .. }) =&gt; <span class="kw-2">*</span>view,
             PacemakerMessage::AdvanceView(AdvanceView {
@@ -265,7 +269,8 @@
         }
     }
 
-    <span class="kw">pub fn </span>size(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; u64 {
+    <span class="doccomment">/// Get the size (in bytes) of the in-memory representation of the inner message.
+    </span><span class="kw">pub fn </span>size(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; u64 {
         <span class="kw">match </span><span class="self">self </span>{
             PacemakerMessage::TimeoutVote(<span class="kw">_</span>) =&gt; mem::size_of::&lt;TimeoutVote&gt;() <span class="kw">as </span>u64,
             PacemakerMessage::AdvanceView(<span class="kw">_</span>) =&gt; mem::size_of::&lt;AdvanceView&gt;() <span class="kw">as </span>u64,
@@ -289,14 +294,21 @@
     }
 }
 
-<span class="doccomment">/// A vote in favour of terminating a given view and moving to the next view. The signature is over
-/// chain id and view.
+<span class="doccomment">/// Vote in favor of leaving a specified Epoch-Change `view` and moving on to the next view.
 </span><span class="attr">#[derive(Clone, BorshSerialize, BorshDeserialize)]
 </span><span class="kw">pub struct </span>TimeoutVote {
-    <span class="kw">pub </span>chain_id: ChainID,
-    <span class="kw">pub </span>view: ViewNumber,
-    <span class="kw">pub </span>signature: SignatureBytes,
-    <span class="kw">pub </span>highest_tc: <span class="prelude-ty">Option</span>&lt;TimeoutCertificate&gt;,
+    <span class="doccomment">/// `ChainID` of the block tree that the replica's validator set extends.
+    </span><span class="kw">pub </span>chain_id: ChainID,
+
+    <span class="doccomment">/// The view that this timeout vote seeks to terminate.
+    </span><span class="kw">pub </span>view: ViewNumber,
+
+    <span class="doccomment">/// Signature over `chain_id` and `view` made using the sending replica's keypair.
+    </span><span class="kw">pub </span>signature: SignatureBytes,
+
+    <span class="doccomment">/// The current highest timeout certificate of the sending replica, i.e., the the one with the highest
+    /// [`view`](TimeoutCertificate::view).
+    </span><span class="kw">pub </span>highest_tc: <span class="prelude-ty">Option</span>&lt;TimeoutCertificate&gt;,
 }
 
 <span class="kw">impl </span>SignedMessage <span class="kw">for </span>TimeoutVote {
@@ -319,16 +331,14 @@
     }
 }
 
-<span class="doccomment">/// A message containing a proof that the view can be advanced. The proof can be either a
-/// [`PhaseCertificate`] or a [`TimeoutCertificate`] for the view.
+<span class="doccomment">/// Message containing cryptographic proof that a replica can safely advance to higher view.
 </span><span class="attr">#[derive(Clone, BorshSerialize, BorshDeserialize)]
 </span><span class="kw">pub struct </span>AdvanceView {
     <span class="kw">pub </span>progress_certificate: ProgressCertificate,
 }
 
-<span class="doccomment">/// Proof that either:
-/// 1. A quorum made a decision in the current view ([`PhaseCertificate`]), or
-/// 2. A quorum voted for terminating the current view on timing out ([`TimeoutCertificate`]).
+<span class="doccomment">/// Enum wrapper around every kind of [`Certificate`](crate::types::signed_messages::Certificate) that
+/// can cause a replica to move to another view.
 </span><span class="attr">#[derive(Clone, BorshSerialize, BorshDeserialize)]
 </span><span class="kw">pub enum </span>ProgressCertificate {
     TimeoutCertificate(TimeoutCertificate),

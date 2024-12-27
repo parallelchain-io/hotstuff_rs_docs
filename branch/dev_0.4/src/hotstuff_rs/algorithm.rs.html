@@ -180,7 +180,12 @@
 <a href="#179" id="179">179</a>
 <a href="#180" id="180">180</a>
 <a href="#181" id="181">181</a>
-<a href="#182" id="182">182</a></pre></div><pre class="rust"><code><span class="comment">/*
+<a href="#182" id="182">182</a>
+<a href="#183" id="183">183</a>
+<a href="#184" id="184">184</a>
+<a href="#185" id="185">185</a>
+<a href="#186" id="186">186</a>
+<a href="#187" id="187">187</a></pre></div><pre class="rust"><code><span class="comment">/*
     Copyright © 2023, ParallelChain Lab
     Licensed under the Apache License, Version 2.0: http://www.apache.org/licenses/LICENSE-2.0
 */
@@ -210,11 +215,14 @@
         receiving::{BlockSyncClientStub, ProgressMessageReceiveError, ProgressMessageStub},
         sending::SenderHandle,
     },
-    pacemaker::protocol::{Pacemaker, PacemakerConfiguration},
+    pacemaker::implementation::{Pacemaker, PacemakerConfiguration},
     types::data_types::{BufferSize, ChainID, ViewNumber},
 };
 
-<span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">struct </span>Algorithm&lt;N: Network + <span class="lifetime">'static</span>, K: KVStore, A: App&lt;K&gt; + <span class="lifetime">'static</span>&gt; {
+<span class="doccomment">/// Instance of the algorithm thread.
+///
+/// This struct's `Drop` destructor gracefully shuts down the algorithm thread.
+</span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">struct </span>Algorithm&lt;N: Network + <span class="lifetime">'static</span>, K: KVStore, A: App&lt;K&gt; + <span class="lifetime">'static</span>&gt; {
     chain_id: ChainID,
     pm_stub: ProgressMessageStub,
     block_tree: BlockTreeSingleton&lt;K&gt;,
@@ -226,7 +234,8 @@
 }
 
 <span class="kw">impl</span>&lt;N: Network + <span class="lifetime">'static</span>, K: KVStore, A: App&lt;K&gt; + <span class="lifetime">'static</span>&gt; Algorithm&lt;N, K, A&gt; {
-    <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>new(
+    <span class="doccomment">/// Create an instance of the algorithm thread.
+    </span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>new(
         chain_id: ChainID,
         hotstuff_config: HotStuffConfiguration,
         pacemaker_config: PacemakerConfiguration,
@@ -265,7 +274,7 @@
         )
         .expect(<span class="string">"Failed to create a new Pacemaker!"</span>);
 
-        <span class="kw">let </span>init_view_info = pacemaker.view_info();
+        <span class="kw">let </span>init_view_info = pacemaker.query();
 
         <span class="kw">let </span>hotstuff = HotStuff::new(
             hotstuff_config,
@@ -299,7 +308,8 @@
         }
     }
 
-    <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>start(<span class="self">self</span>) -&gt; JoinHandle&lt;()&gt; {
+    <span class="doccomment">/// Start an instance of the algorithm thread.
+    </span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>start(<span class="self">self</span>) -&gt; JoinHandle&lt;()&gt; {
         thread::spawn(<span class="kw">move </span>|| <span class="self">self</span>.execute())
     }
 
@@ -320,7 +330,7 @@
                 .expect(<span class="string">"Pacemaker failure!"</span>);
 
             <span class="comment">// 3. Query the pacemaker for potential updates to the current view.
-            </span><span class="kw">let </span>view_info = <span class="self">self</span>.pacemaker.view_info();
+            </span><span class="kw">let </span>view_info = <span class="self">self</span>.pacemaker.query();
 
             <span class="comment">// 4. In case the view has been updated, update HotStuff's internal view and perform
             // the necessary protocol steps.
