@@ -22,12 +22,20 @@
 <a href="#21" id="21">21</a>
 <a href="#22" id="22">22</a>
 <a href="#23" id="23">23</a>
-<a href="#24" id="24">24</a></pre></div><pre class="rust"><code><span class="kw">use </span>ed25519_dalek::VerifyingKey;
+<a href="#24" id="24">24</a>
+<a href="#25" id="25">25</a>
+<a href="#26" id="26">26</a>
+<a href="#27" id="27">27</a>
+<a href="#28" id="28">28</a></pre></div><pre class="rust"><code><span class="doccomment">//! Functions and types for sending messages to the P2P network.
+
+</span><span class="kw">use </span>ed25519_dalek::VerifyingKey;
 
 <span class="kw">use super</span>::{messages::Message, network::Network};
 
-<span class="doccomment">/// Handle for sending and broadcasting messages to the [`Network`]. It can be used to send or broadcast
-/// instances of any type that implement the [`Into&lt;Message&gt;`] trait.
+<span class="doccomment">/// Handle for sending and broadcasting messages to the [`Network`].
+///
+/// It can be used to send or broadcast instances of any type that implement the [`Into&lt;Message&gt;`]
+/// trait.
 </span><span class="attr">#[derive(Clone)]
 </span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">struct </span>SenderHandle&lt;N: Network&gt; {
     network: N,

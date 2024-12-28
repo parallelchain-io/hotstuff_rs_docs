@@ -426,7 +426,14 @@
 <a href="#425" id="425">425</a>
 <a href="#426" id="426">426</a>
 <a href="#427" id="427">427</a>
-<a href="#428" id="428">428</a></pre></div><pre class="rust"><code><span class="kw">use </span>std::{
+<a href="#428" id="428">428</a>
+<a href="#429" id="429">429</a>
+<a href="#430" id="430">430</a>
+<a href="#431" id="431">431</a>
+<a href="#432" id="432">432</a>
+<a href="#433" id="433">433</a></pre></div><pre class="rust"><code><span class="doccomment">//! Functions and types for receiving messages from the P2P network.
+
+</span><span class="kw">use </span>std::{
     collections::{BTreeMap, VecDeque},
     mem,
     sync::mpsc::{<span class="self">self</span>, Receiver, RecvTimeoutError, TryRecvError},
@@ -446,8 +453,10 @@
     network::Network,
 };
 
-<span class="doccomment">/// Spawn the poller thread, which polls the [`Network`] for messages and distributes them into receivers
-/// for:
+<span class="doccomment">/// Spawn the poller thread, which polls the [`Network`] for messages and distributes them into receiver
+/// handles.
+///
+/// The kinds of messages that the pollers poll are:
 /// 1. Progress messages (processed by the [`Algorithm`][crate::algorithm::Algorithm]'s execute loop), and
 /// 2. Block sync requests (processed by [`BlockSyncServer`][crate::block_sync::server::BlockSyncServer]),
 ///    and
@@ -500,7 +509,7 @@
     )
 }
 
-<span class="doccomment">/// A receiving end for [`ProgressMessages`](ProgressMessage).
+<span class="doccomment">/// A receiving end for [`ProgressMessage`](ProgressMessage)s.
 ///
 /// ## View-aware buffering
 ///
@@ -635,9 +644,10 @@
     Disconnected,
 }
 
-<span class="doccomment">/// Message buffer intended for storing received [`ProgressMessage`]s for future views. Its size is
-/// bounded by its capacity, and when the capacity is reached messages for highest views may be
-/// removed.
+<span class="doccomment">/// Message buffer intended for storing received [`ProgressMessage`]s for future views.
+///
+/// Its size is bounded by its capacity, and when the capacity is reached messages for highest views may
+/// be removed.
 </span><span class="kw">struct </span>ProgressMessageBuffer {
     buffer_capacity: BufferSize,
     buffer: BTreeMap&lt;ViewNumber, VecDeque&lt;(VerifyingKey, ProgressMessage)&gt;&gt;,

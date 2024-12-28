@@ -89,7 +89,20 @@
 <a href="#88" id="88">88</a>
 <a href="#89" id="89">89</a>
 <a href="#90" id="90">90</a>
-<a href="#91" id="91">91</a></pre></div><pre class="rust"><code><span class="kw">use </span>borsh::{BorshDeserialize, BorshSerialize};
+<a href="#91" id="91">91</a>
+<a href="#92" id="92">92</a>
+<a href="#93" id="93">93</a>
+<a href="#94" id="94">94</a>
+<a href="#95" id="95">95</a>
+<a href="#96" id="96">96</a>
+<a href="#97" id="97">97</a>
+<a href="#98" id="98">98</a>
+<a href="#99" id="99">99</a>
+<a href="#100" id="100">100</a>
+<a href="#101" id="101">101</a>
+<a href="#102" id="102">102</a></pre></div><pre class="rust"><code><span class="doccomment">//! Exhaustive enumerations around every message variant used in HotStuff-rs.
+
+</span><span class="kw">use </span>borsh::{BorshDeserialize, BorshSerialize};
 
 <span class="kw">use crate</span>::{
     block_sync::messages::{
@@ -100,10 +113,14 @@
     types::data_types::{ChainID, ViewNumber},
 };
 
-<span class="attr">#[derive(Clone, BorshSerialize, BorshDeserialize)]
+<span class="doccomment">/// All message variants used in HotStuff-rs.
+</span><span class="attr">#[derive(Clone, BorshSerialize, BorshDeserialize)]
 </span><span class="kw">pub enum </span>Message {
-    ProgressMessage(ProgressMessage),
-    BlockSyncMessage(BlockSyncMessage),
+    <span class="doccomment">/// See: [`ProgressMessage`].
+    </span>ProgressMessage(ProgressMessage),
+
+    <span class="doccomment">/// See: [`BlockSyncMessage`].
+    </span>BlockSyncMessage(BlockSyncMessage),
 }
 
 <span class="kw">impl </span>From&lt;HotStuffMessage&gt; <span class="kw">for </span>Message {
@@ -136,20 +153,22 @@
     }
 }
 
-<span class="doccomment">/// A message that serves to advance the consensus process, which may involve:
-/// 1. Participating in consesus via a [`HotStuffMessage`],
-/// 2. Syncing views with other replicas via a [`PacemakerMessage`] (required for consensus),
-/// 3. Triggering block sync on seeing a [`BlockSyncAdvertiseMessage`], which indicates that
-///    the replica is lagging behind the others (required for consensus).
+<span class="doccomment">/// Message variants sent or received by the [`algorithm`](crate::algorithm) thread.
 </span><span class="attr">#[derive(Clone, BorshSerialize, BorshDeserialize)]
 </span><span class="kw">pub enum </span>ProgressMessage {
-    HotStuffMessage(HotStuffMessage),
-    PacemakerMessage(PacemakerMessage),
-    BlockSyncAdvertiseMessage(BlockSyncAdvertiseMessage),
+    <span class="doccomment">/// See [`HotStuffMessage`].
+    </span>HotStuffMessage(HotStuffMessage),
+
+    <span class="doccomment">/// See [`PacemakerMessage`].
+    </span>PacemakerMessage(PacemakerMessage),
+
+    <span class="doccomment">/// See [`BlockSyncAdvertiseMessage`],
+    </span>BlockSyncAdvertiseMessage(BlockSyncAdvertiseMessage),
 }
 
 <span class="kw">impl </span>ProgressMessage {
-    <span class="kw">pub fn </span>chain_id(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; ChainID {
+    <span class="doccomment">/// Get the `chain_id` field of the inner message.
+    </span><span class="kw">pub fn </span>chain_id(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; ChainID {
         <span class="kw">match </span><span class="self">self </span>{
             ProgressMessage::HotStuffMessage(msg) =&gt; msg.chain_id(),
             ProgressMessage::PacemakerMessage(msg) =&gt; msg.chain_id(),
@@ -157,7 +176,8 @@
         }
     }
 
-    <span class="kw">pub fn </span>view(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;ViewNumber&gt; {
+    <span class="doccomment">/// Get the `view` field of the inner message.
+    </span><span class="kw">pub fn </span>view(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;ViewNumber&gt; {
         <span class="kw">match </span><span class="self">self </span>{
             ProgressMessage::HotStuffMessage(msg) =&gt; <span class="prelude-val">Some</span>(msg.view()),
             ProgressMessage::PacemakerMessage(msg) =&gt; <span class="prelude-val">Some</span>(msg.view()),
@@ -165,7 +185,8 @@
         }
     }
 
-    <span class="kw">pub fn </span>size(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; u64 {
+    <span class="doccomment">/// Get the size of the inner message.
+    </span><span class="kw">pub fn </span>size(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; u64 {
         <span class="kw">match </span><span class="self">self </span>{
             ProgressMessage::HotStuffMessage(msg) =&gt; msg.size(),
             ProgressMessage::PacemakerMessage(msg) =&gt; msg.size(),
@@ -173,7 +194,8 @@
         }
     }
 
-    <span class="kw">pub fn </span>is_block_sync_trigger_msg(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; bool {
+    <span class="doccomment">/// Check whether the inner message is a [`BlockSyncAdvertiseMessage`].
+    </span><span class="kw">pub fn </span>is_block_sync_trigger_msg(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; bool {
         <span class="kw">match </span><span class="self">self </span>{
             ProgressMessage::BlockSyncAdvertiseMessage(<span class="kw">_</span>) =&gt; <span class="bool-val">true</span>,
             <span class="kw">_ </span>=&gt; <span class="bool-val">false</span>,
