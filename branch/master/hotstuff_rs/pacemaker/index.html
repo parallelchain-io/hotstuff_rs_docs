@@ -1,0 +1,203 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Subprotocol for Byzantine view synchronization and leader selection."><title>hotstuff_rs::pacemaker - Rust</title><script>if(window.location.protocol!=="file:")document.head.insertAdjacentHTML("beforeend","SourceSerif4-Regular-46f98efaafac5295.ttf.woff2,FiraSans-Regular-018c141bf0843ffd.woff2,FiraSans-Medium-8f9a781e4970d388.woff2,SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2,SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2".split(",").map(f=>`<link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/${f}">`).join(""))</script><link rel="stylesheet" href="../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../static.files/rustdoc-b0742ba02757f159.css"><meta name="rustdoc-vars" data-root-path="../../" data-static-root-path="../../static.files/" data-current-crate="hotstuff_rs" data-themes="" data-resource-suffix="" data-rustdoc-version="1.83.0 (90b35a623 2024-11-26)" data-channel="1.83.0" data-search-js="search-f0d225181b97f9a4.js" data-settings-js="settings-805db61a62df4bd2.js" ><script src="../../static.files/storage-1d39b6787ed640ff.js"></script><script defer src="../sidebar-items.js"></script><script defer src="../../static.files/main-f070b9041d14864c.js"></script><noscript><link rel="stylesheet" href="../../static.files/noscript-0111fcff984fae8f.css"></noscript><link rel="icon" href="https://raw.githubusercontent.com/parallelchain-io/hotstuff_rs/refs/heads/final_touches/readme_assets/HotStuff-rs%20logo.png"></head><body class="rustdoc mod"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle" title="show sidebar"></button><a class="logo-container" href="../../hotstuff_rs/index.html"><img src="https://raw.githubusercontent.com/parallelchain-io/hotstuff_rs/refs/heads/final_touches/readme_assets/HotStuff-rs%20logo.png" alt=""></a></nav><nav class="sidebar"><div class="sidebar-crate"><a class="logo-container" href="../../hotstuff_rs/index.html"><img src="https://raw.githubusercontent.com/parallelchain-io/hotstuff_rs/refs/heads/final_touches/readme_assets/HotStuff-rs%20logo.png" alt="logo"></a><h2><a href="../../hotstuff_rs/index.html">hotstuff_<wbr>rs</a><span class="version">0.4.0</span></h2></div><div class="sidebar-elems"><section id="rustdoc-toc"><h2 class="location"><a href="#">Module pacemaker</a></h2><h3><a href="#">Sections</a></h3><ul class="block top-toc"><li><a href="#byzantine-view-synchronization" title="Byzantine View Synchronization">Byzantine View Synchronization</a><ul><li><a href="#high-level-idea" title="High-level idea">High-level idea</a></li><li><a href="#modifications-on-lewis-pye-2021" title="Modifications on Lewis-Pye (2021)">Modifications on Lewis-Pye (2021)</a></li></ul></li><li><a href="#leader-selection" title="Leader Selection">Leader Selection</a></li></ul><h3><a href="#modules">Module Items</a></h3><ul class="block"><li><a href="#modules" title="Modules">Modules</a></li></ul></section><div id="rustdoc-modnav"><h2 class="in-crate"><a href="../index.html">In crate hotstuff_<wbr>rs</a></h2></div></div></nav><div class="sidebar-resizer"></div><main><div class="width-limiter"><rustdoc-search></rustdoc-search><section id="main-content" class="content"><div class="main-heading"><span class="rustdoc-breadcrumbs"><a href="../index.html">hotstuff_rs</a></span><h1>Module <span>pacemaker</span><button id="copy-path" title="Copy item path to clipboard">Copy item path</button></h1><rustdoc-toolbar></rustdoc-toolbar><span class="sub-heading"><a class="src" href="../../src/hotstuff_rs/pacemaker/mod.rs.html#1-243">source</a> </span></div><details class="toggle top-doc" open><summary class="hideme"><span>Expand description</span></summary><div class="docblock"><p>Subprotocol for Byzantine view synchronization and leader selection.</p>
+<p>The documentation for this module is divided into two sections, the first describing how the
+Pacemaker subprotocol provides <a href="#byzantine-view-synchronization">Byzantine View Synchronization</a>
+functionality for HotStuff-rs, and the second describing how it provides
+<a href="#leader-selection">Leader Selection</a> functionality.</p>
+<h2 id="byzantine-view-synchronization"><a class="doc-anchor" href="#byzantine-view-synchronization">§</a>Byzantine View Synchronization</h2>
+<p>SMR protocols like <a href="../hotstuff/index.html" title="mod hotstuff_rs::hotstuff">HotStuff</a> can only make progress if a quorum of replicas spend
+a long enough time in the same view in order to go through all of the protocol’s voting phases. In
+other words, state machine replication is only live once <strong>view synchronization</strong> is achieved.</p>
+<p>Achieving view synchronization is hard, and it is <em>especially</em> hard if we have to make any of the
+following four assumptions, all of which we have to make in order to make a robust BFT SMR solution:</p>
+<ol>
+<li><strong>Replicas do not have synchronized clocks</strong>: replicas’ local clocks can go out of sync, and
+further, replicas cannot rely on any “global” clock such as that provided by the Network Time
+Protocol (NTP), since these would be centralized attack targets.</li>
+<li><strong>Replicas can fail in arbitrary ways</strong>: replicas can crash, refuse to respond to messages, or
+generally behave in malicious ways as if controlled by an adversary.</li>
+<li><strong>Message complexity matters</strong>: network bandwidth is limited, so we want to limit the number (and
+size) of messages that have to be exchanged in order to achieve view synchronization.</li>
+<li><strong>Optimistic responsiveness is desirable</strong>: we want view synchronization to be achieved as quickly
+as network delays allow it to be achieved. This eliminates protocols such as “just increment your
+local view number every <code>n</code> seconds” from our consideration.</li>
+</ol>
+<p>The view synchronization mechanism used in HotStuff-rs versions 0.3 and prior (as well as mentioned
+in the original PODC’19 HotStuff paper) is “exponentially increasing view timeouts”. This mechanism
+nominally succeeds in not relying on synchronized clocks, being resistant to Byzantine failures, and
+having a low message complexity (no messages are ever sent!). However, it completely fails to ensure
+optimistic responsiveness.</p>
+<p>The current version of HotStuff-rs (v0.4) achieves view synchronization under all four
+assumptions by incorporating a brand new <strong>Pacemaker</strong> module (this module) that implements a
+modified version of the Byzantine View Synchronization algorithm described in
+<a href="https://arxiv.org/pdf/2201.01107.pdf">Lewis-Pye (2021)</a>.</p>
+<h3 id="high-level-idea"><a class="doc-anchor" href="#high-level-idea">§</a>High-level idea</h3>
+<p>The modified Lewis-Pye (2021) algorithm implemented by this module divides views into sequences
+called “epochs”. Each of these epochs are of equal length; i.e., if we denote this length as <code>N</code>,
+then:</p>
+<ul>
+<li>The 0th epoch would contain views <code>[0, 1, ..., N-2, N-1]</code>.</li>
+<li>The 1st epoch would contain views <code>[N, N+1, ..., 2N-2, 2N-1]</code>.</li>
+<li>…and so on.</li>
+</ul>
+<p>On top of the delineation of views into epochs described above, the algorithm distinguishes between
+two kinds of views, “Epoch-Change Views”, and “Normal Views”:</p>
+<ul>
+<li><strong>Epoch-Change View</strong>: the last view in every epoch (i.e., <code>{N-1, 2N-1, ...}</code>).</li>
+<li><strong>Normal View</strong>: every other view.</li>
+</ul>
+<p>The Pacemaker <a href="implementation/index.html" title="mod hotstuff_rs::pacemaker::implementation"><code>implementation</code></a> works so that views progress in a monotonically increasing fashion,
+i.e., from a smaller view, to a higher view. However, the ways a replica can leave its current view
+to enter the next view differ fundamentally depending on what kind of view the current view is.
+After reading this documentation, you’ll understand how these different ways of leaving a view work
+together to guarantee the safety and liveness of the Pacemaker subprotocol, as well as HotStuff-rs
+as a whole.</p>
+<p>The following three subsections explain the different ways a replica can leave a view:</p>
+<ol>
+<li><a href="#leaving-a-normal-view">Leaving a Normal View</a> lists the two lightweight ways a replica can leave
+a normal view.</li>
+<li><a href="#the-need-to-vote-for-epoch-changes">The need to vote for Epoch Changes</a> explains why the
+lightweight mechanisms used to leave a normal view are not sufficient in the long run to maintain
+view synchronization even if it were initially achieved.</li>
+<li><a href="#leaving-an-epoch-change-view">Leaving an Epoch-Change View</a> picks up from the previous subsection
+and describes the heavyweight way a replica can leave an Epoch-Change view, which allows for view
+synchronization to be recovered in case it was lost.</li>
+</ol>
+<h4 id="leaving-a-normal-view"><a class="doc-anchor" href="#leaving-a-normal-view">§</a>Leaving a Normal View</h4>
+<p>A replica leaves a normal view when one of the following two things happen:</p>
+<ol>
+<li>It receives a valid <code>AdvanceView</code> message containing a
+<a href="../hotstuff/types/struct.PhaseCertificate.html" title="struct hotstuff_rs::hotstuff::types::PhaseCertificate"><code>PhaseCertificate</code></a> for the current view or higher.</li>
+<li>It has spent longer than a predetermined amount of time in the view (i.e., when its local timer
+times out).</li>
+</ol>
+<p>Both mechanisms for leaving a normal view are “lightweight” in the sense that neither requires a
+dedicated voting round. The first mechanism reuses <code>PhaseCertificate</code>s produced by the HotStuff
+subprotocol in order to advance to the next view as fast as consensus decisions happen (thereby
+achieving Optimistic Responsiveness), while the second mechanism serves as a fallback in case the
+leader of the current view fails to make progress in time (which could happen if the current leader
+is Byzantine).</p>
+<h4 id="the-need-to-vote-for-epoch-changes"><a class="doc-anchor" href="#the-need-to-vote-for-epoch-changes">§</a>The need to vote for Epoch Changes</h4>
+<p>Recall our assumption that replicas do not have synchronized clocks. This means that if we do not
+intervene, replicas’ local clocks will slowly but surely go out of sync. This progressive
+desynchronization is manageable as long as the HotStuff subprotocol continues to make new consensus
+decisions, since in this case <code>AdvanceView</code> messages will continue to be delivered, acting as a
+rudimentary block synchronization mechanism.</p>
+<p>Inevitably, however, the HotStuff subprotocol <em>will</em> fail to make progress for an extended period:
+network connections will go down, replicas will fail, and messages will fail to get delivered. If
+this period of no progress continues for long enough, replicas’ clocks will eventually get so out of
+sync that there will no longer be a quorum of validators currently in any single view. Consensus
+decisions beyond this point will become impossible, and the blockchain will stop growing forever.</p>
+<p>To prevent views from getting <em>too</em> out of sync, and to help restore view synchronization after it
+has been lost, leaving an Epoch-Change View after it has timed out requires an explicit voting step,
+as described in the next section.</p>
+<h4 id="leaving-an-epoch-change-view"><a class="doc-anchor" href="#leaving-an-epoch-change-view">§</a>Leaving an Epoch-Change View</h4>
+<p>Just like with Normal Views, a replica still leaves an Epoch-Change view upon receiving a valid
+<code>AdvanceView</code> message containing a <code>PhaseCertificate</code> for the current view or higher. The difference
+between the procedures for leaving the two different kinds of views has to do with what happens when
+a replica times out in an Epoch-Change View.</p>
+<p>When a validator times out in an Epoch-Change View, it does not immediately move to the next view.
+Instead, it broadcasts a <code>TimeoutVote</code> message to all <code>N</code> leaders of the next epoch, and then waits.</p>
+<p>Concurrently, when a leader of the next epoch receives a <code>TimeoutVote</code>, it buffers it temporarily.
+Once it has managed to buffer a set of <code>TimeoutVote</code>s for the same view from a quorum of replicas in
+an <a href="../types/signed_messages/struct.ActiveCollectorPair.html#active-validator-sets" title="struct hotstuff_rs::types::signed_messages::ActiveCollectorPair">active validator set</a>,
+it collects them in a <a href="types/struct.TimeoutCertificate.html" title="struct hotstuff_rs::pacemaker::types::TimeoutCertificate"><code>TimeoutCertificate</code></a> and broadcasts it to every
+replica.</p>
+<p>Upon receiving a valid <code>TimeoutCertificate</code> for the current view or a higher view, a replica waiting
+at the end of an Epoch-Change View re-broadcasts the <code>TimeoutCertificate</code> to all other replicas and
+then moves to the view that follows immediately after the view indicated in the certificate.</p>
+<p>The idea behind this mechanism is that if there is no view which currently contains a quorum of
+validators, replicas will eventually stop and  “park” themselves in the same epoch-change view and
+get going again when there’s again a quorum of validators in the view ready to proceed.</p>
+<h3 id="modifications-on-lewis-pye-2021"><a class="doc-anchor" href="#modifications-on-lewis-pye-2021">§</a>Modifications on Lewis-Pye (2021)</h3>
+<p>This module does not implement the protocol specified in Lewis-Pye (2021) exactly, but instead makes
+a few subtle modifications. These modifications are described in the subsections below alongside the
+justification for each.</p>
+<h4 id="modification-1-terminological-differences"><a class="doc-anchor" href="#modification-1-terminological-differences">§</a>Modification 1: Terminological differences</h4>
+<p>We call the “epoch e” messages defined in Lewis-Pye (2021) <code>TimeoutVote</code>s, and the
+“EpochCertificate” type as <code>TimeoutCertificate</code>s.</p>
+<p>This is so that the terminology used in the Pacemaker subprotocol aligns better with the terminology
+used in the HotStuff subprotocol, in which <a href="../hotstuff/messages/struct.PhaseVote.html" title="struct hotstuff_rs::hotstuff::messages::PhaseVote"><code>PhaseVote</code></a>s are
+aggregated into <a href="../hotstuff/types/struct.PhaseCertificate.html" title="struct hotstuff_rs::hotstuff::types::PhaseCertificate"><code>PhaseCertificate</code></a>s.</p>
+<h4 id="modification-2-user-configurable-epoch-length"><a class="doc-anchor" href="#modification-2-user-configurable-epoch-length">§</a>Modification 2: User-configurable epoch length</h4>
+<p>A key part of Lewis-Pye (2021)’s correctness is the property that at <strong>at least 1</strong> validator in any
+in any epoch is honest (non-Byzantine).</p>
+<p>Lewis-Pye (2021) guarantees this under <strong>static validator sets</strong> by setting the length of epochs
+(<code>N</code>) to be <code>f+1</code>, where <code>f</code> is the maximum number of validators that can be Byzantine at any
+moment. This makes it so that even in the “worst case” where all <code>f</code> faulty validators are selected
+to be leaders of the same epoch, said epoch will still contain <code>1</code> honest leader.</p>
+<p>With <strong>dynamic validator sets</strong>, which HotStuff-rs
+<a href="../app/index.html#two-app-mutable-states-app-state-and-validator-set" title="mod hotstuff_rs::app">supports</a>, <code>f</code> ceases to be a
+constant. To guarantee the property that at least 1 validator in any epoch is honest under this
+setting, two options come into mind:</p>
+<ol>
+<li>Make the Pacemaker somehow dynamically change epoch lengths.</li>
+<li>Make the epoch length user-configurable, and advise the user to set it to be a large enough value.</li>
+</ol>
+<p>HotStuff-rs’ Pacemaker goes with the <strong>second option</strong> for for completely pragmatic reasons: if we
+had gone for the first option, we’d have to create an algorithm that speculates not only about
+dynamically-changing validator sets, but also dynamically-changing epoch lengths, and intuitively,
+it seems difficult to create one that satisfies safety and liveness while still remaining simple.</p>
+<p>A reasonable choice for <code>N</code> could be the expected maximum number of validators throughout the
+lifetime of the blockchain. This is large enough that <code>f</code> should remain well below <code>N</code> even if the
+number of validators in the network exceeds expectations, and small enough that it does not affect
+the asymptotic complexities of the algorithm.</p>
+<h4 id="modification-3-advanceview-replaces-view-certificates-vcs"><a class="doc-anchor" href="#modification-3-advanceview-replaces-view-certificates-vcs">§</a>Modification 3: <code>AdvanceView</code> replaces View Certificates (VCs)</h4>
+<p>The “optimistic” mechanism for leaving a normal view in Lewis-Pye (2021) involves a dedicated voting
+round where replicas send a “view v” message to the leader of view v, and then waits to receive a
+View Certificate (VC) from said leader.</p>
+<p>The <a href="#leaving-a-normal-view">corresponding mechanism</a> in HotStuff-rs replaces VCs with a new message
+type called <code>AdvanceView</code>. These contain existing <code>PhaseCertificate</code>s produced by the HotStuff
+subprotocol.</p>
+<p>This optimization is sound because the whole purpose of <code>ViewCertificate</code>s is to indicate that a
+quorum of validators are “done” with a specific view; and a <code>PhaseCertificate</code> serve this purpose
+just as well, and without requiring an extra voting round.</p>
+<h4 id="modification-4-timeoutvote-includes-the-highest_tc"><a class="doc-anchor" href="#modification-4-timeoutvote-includes-the-highest_tc">§</a>Modification 4: TimeoutVote includes the <code>highest_tc</code></h4>
+<p>In Lewis-Pye (2021), <a href="#leaving-an-epoch-change-view">Epoch-Change views end</a> with a leader of the
+next epoch broadcasting a newly-collected <code>TimeoutCertificate</code>.</p>
+<p><code>TimeoutCertificate</code>s are also broadcasted at the end of an Epoch-Change view in HotStuff-rs’s
+Pacemaker subprotocol, but are also <strong>additionally</strong> sent out in another message type:
+<a href="messages/struct.TimeoutVote.html" title="struct hotstuff_rs::pacemaker::messages::TimeoutVote"><code>TimeoutVote</code></a>s. Specifically, <code>TimeoutVote</code> has a
+<a href="messages/struct.TimeoutVote.html#structfield.highest_tc" title="field hotstuff_rs::pacemaker::messages::TimeoutVote::highest_tc"><code>highest_tc</code></a> field not present in Lewis-Pye (2021). This is
+set by the sending validator to be the <code>TimeoutCertificate</code> with the highest view number it knows
+of.</p>
+<p>Theoretically speaking, including the <code>highest_tc</code> in <code>TimeoutVote</code>s is unnecessary: in the
+partially synchronous network model that Lewis-Pye (2021) assumes, message deliveries can be delayed
+arbitrarily before Global Stabilization Time (GST), but always eventually get delivered, and
+therefore the all-to-all broadcast of <code>TimeoutCertificate</code>s that happen at the end of every
+Epoch-Change View should be sufficient to keep a quorum of replicas up-to-date about the current
+epoch.</p>
+<p>Practically, however, network infrastructure does occasionally suffer catastrophic failures that
+cause the vast majority of messages between replicas to be lost. <code>highest_tc</code> helps Pacemaker be
+robust against these kinds of failures by giving replicas a “second chance” to receive a
+<code>TimeoutCertificate</code> if they had missed it during an all-to-all broadcast.</p>
+<h2 id="leader-selection"><a class="doc-anchor" href="#leader-selection">§</a>Leader Selection</h2>
+<p>The second of the two functionalities that Pacemaker provides to HotStuff-rs is called Leader
+Selection.</p>
+<p>The basic requirement that a Leader Selection Mechanism for a generic SMR algorithm must meet
+is that it must provide a mapping from <em>Views to Leaders</em>, i.e., a function with signature
+<code>ViewNumber -&gt; VerifyingKey</code>.</p>
+<p>Leader Selection for HotStuff-rs, however, comes with three additional requirements:</p>
+<ol>
+<li><strong>Support for Dynamic Validator Sets</strong>: the validator set in that replicates a HotStuff-rs
+blockchain can <a href="../app/index.html#two-app-mutable-states-app-state-and-validator-set" title="mod hotstuff_rs::app">change
+dynamically</a> according to the
+application’s instructions. This means that the function that the Leader Selection mechanism
+provides must have the signature <code>(ViewNumber, ValidatorSet) -&gt; VerifyingKey</code>.</li>
+<li><strong>Frequent rotation</strong>: if a Byzantine replica were to become leader for an extended, continuous
+sequence of views, it could harm the network in a variety of ways: ranging from the immediately
+apparent (e.g., not proposing any blocks, thereby preventing the blockchain from growing), to
+the more insiduous (e.g., refusing to include transactions from specific clients in the blocks
+it proposes, i.e., censoring them). To prevent these kinds of service disruptions, our leader
+selection mechanism should ensure that leadership of the validator set is rotated among all
+validators, ensuring that a Byzantine replica cannot be leader for too long.</li>
+<li><strong>Weighted selection</strong>: In most popular Proof of Stake (PoS) blockchain systems, a validator’s stake
+determines not only the weight of its votes in consensus decisions but also likelihood of being
+selected as the leader for a given view. Likewise, we would like our leader selection mechanism to
+generate a leader sequence where each validator appears with a frequency proportional to its Power
+relative to the TotalPower of the validator set (i.e., if a validator makes up roughly X% of the
+validator set’s total power, then it should be the leader of approximately X% of views).</li>
+</ol>
+<p>To meet these requirements, Pacemaker’s leader selection implementation
+(<a href="implementation/fn.select_leader.html" title="fn hotstuff_rs::pacemaker::implementation::select_leader"><code>select_leader</code></a>) uses the Interleaved Weighted Round-Robin
+(<a href="https://en.wikipedia.org/wiki/Weighted_round_robin#Interleaved_WRR">Interleaved WRR</a>) algorithm.</p>
+</div></details><h2 id="modules" class="section-header">Modules<a href="#modules" class="anchor">§</a></h2><ul class="item-table"><li><div class="item-name"><a class="mod" href="implementation/index.html" title="mod hotstuff_rs::pacemaker::implementation">implementation</a><span title="Restricted Visibility">&nbsp;🔒</span> </div><div class="desc docblock-short">Event-driven implementation of the Pacemaker subprotocol.</div></li><li><div class="item-name"><a class="mod" href="messages/index.html" title="mod hotstuff_rs::pacemaker::messages">messages</a></div><div class="desc docblock-short">Messages sent between replicas as part of the Pacemaker subprotocol.</div></li><li><div class="item-name"><a class="mod" href="types/index.html" title="mod hotstuff_rs::pacemaker::types">types</a></div><div class="desc docblock-short">Types specific to the Pacemaker protocol.</div></li></ul></section></div></main></body></html>

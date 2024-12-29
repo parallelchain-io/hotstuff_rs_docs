@@ -1,0 +1,255 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Rules and predicates that help with maintaining the invariant properties of the Block Tree data structure."><title>hotstuff_rs::block_tree::invariants - Rust</title><script>if(window.location.protocol!=="file:")document.head.insertAdjacentHTML("beforeend","SourceSerif4-Regular-46f98efaafac5295.ttf.woff2,FiraSans-Regular-018c141bf0843ffd.woff2,FiraSans-Medium-8f9a781e4970d388.woff2,SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2,SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2".split(",").map(f=>`<link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/${f}">`).join(""))</script><link rel="stylesheet" href="../../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../../static.files/rustdoc-b0742ba02757f159.css"><meta name="rustdoc-vars" data-root-path="../../../" data-static-root-path="../../../static.files/" data-current-crate="hotstuff_rs" data-themes="" data-resource-suffix="" data-rustdoc-version="1.83.0 (90b35a623 2024-11-26)" data-channel="1.83.0" data-search-js="search-f0d225181b97f9a4.js" data-settings-js="settings-805db61a62df4bd2.js" ><script src="../../../static.files/storage-1d39b6787ed640ff.js"></script><script defer src="../sidebar-items.js"></script><script defer src="../../../static.files/main-f070b9041d14864c.js"></script><noscript><link rel="stylesheet" href="../../../static.files/noscript-0111fcff984fae8f.css"></noscript><link rel="icon" href="https://raw.githubusercontent.com/parallelchain-io/hotstuff_rs/refs/heads/final_touches/readme_assets/HotStuff-rs%20logo.png"></head><body class="rustdoc mod"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle" title="show sidebar"></button><a class="logo-container" href="../../../hotstuff_rs/index.html"><img src="https://raw.githubusercontent.com/parallelchain-io/hotstuff_rs/refs/heads/final_touches/readme_assets/HotStuff-rs%20logo.png" alt=""></a></nav><nav class="sidebar"><div class="sidebar-crate"><a class="logo-container" href="../../../hotstuff_rs/index.html"><img src="https://raw.githubusercontent.com/parallelchain-io/hotstuff_rs/refs/heads/final_touches/readme_assets/HotStuff-rs%20logo.png" alt="logo"></a><h2><a href="../../../hotstuff_rs/index.html">hotstuff_<wbr>rs</a><span class="version">0.4.0</span></h2></div><div class="sidebar-elems"><section id="rustdoc-toc"><h2 class="location"><a href="#">Module invariants</a></h2><h3><a href="#">Sections</a></h3><ul class="block top-toc"><li><a href="#invariants" title="Invariants">Invariants</a></li><li><a href="#methods" title="Methods">Methods</a><ul><li><a href="#category-1-whether" title="Category 1: “whether”">Category 1: “whether”</a></li><li><a href="#category-2-what" title="Category 2: “what”">Category 2: “what”</a></li></ul></li><li><a href="#blockchain-consistency" title="Blockchain Consistency">Blockchain Consistency</a><ul><li><a href="#locking" title="Locking">Locking</a></li><li><a href="#committing" title="Committing">Committing</a></li></ul></li></ul><h3><a href="#functions">Module Items</a></h3><ul class="block"><li><a href="#functions" title="Functions">Functions</a></li></ul></section><div id="rustdoc-modnav"><h2><a href="../index.html">In hotstuff_<wbr>rs::<wbr>block_<wbr>tree</a></h2></div></div></nav><div class="sidebar-resizer"></div><main><div class="width-limiter"><rustdoc-search></rustdoc-search><section id="main-content" class="content"><div class="main-heading"><span class="rustdoc-breadcrumbs"><a href="../../index.html">hotstuff_rs</a>::<wbr><a href="../index.html">block_tree</a></span><h1>Module <span>invariants</span><button id="copy-path" title="Copy item path to clipboard">Copy item path</button></h1><rustdoc-toolbar></rustdoc-toolbar><span class="sub-heading"><a class="src" href="../../../src/hotstuff_rs/block_tree/invariants.rs.html#6-620">source</a> </span></div><details class="toggle top-doc" open><summary class="hideme"><span>Expand description</span></summary><div class="docblock"><p>Rules and predicates that help with maintaining the invariant properties of the Block Tree data
+structure.</p>
+<p>The rustdoc for this module is divided into three sections:</p>
+<ol>
+<li><a href="#invariants">Invariants</a> clarifies the notion of block tree invariants and groups them into two
+categories depending on whether they are “local” or “global” in nature.</li>
+<li><a href="#methods">Methods</a> lists the methods defined in this module and groups them into two categories
+depending on whether they deal with “whether” questions about state updates or “what” questions.</li>
+<li>Finally, <a href="#blockchain-consistency">Blockchain Consistency</a> discusses HotStuff-rs’ overarching
+global invariant, “blockchain consistency”, and how the methods in this module work together to
+enforce it.</li>
+</ol>
+<h2 id="invariants"><a class="doc-anchor" href="#invariants">§</a>Invariants</h2>
+<p>In the context of this module, invariants are logical properties that are always true about the
+Block Tree.</p>
+<p>Block tree invariants can be grouped into two categories depending on their scope:</p>
+<ul>
+<li><strong>Local Invariants</strong>: invariants that pertain to isolated parts of the block tree. An example of a
+local invariant is the invariant enforced by <code>safe_nudge</code> that <code>nudge.justify.phase</code> must be either
+<code>Prepare</code>, <code>Precommit</code>, or <code>Commit</code>.</li>
+<li><strong>Global Invariants</strong>: invariants that relate different parts of the block tree. An example of a
+global invariant is the invariant enforced by <code>safe_pc</code> that either: (i). <code>pc.block</code> extends from
+<code>block_tree.locked_pc()?.block</code>, or (ii). <code>pc.view</code> is greater than <code>block_tree.locked_pc()?.view</code>.</li>
+</ul>
+<p>Some simple local invariants can be enforced by the type system at compile-time and therefore
+do not need to be checked at runtime. For example, the typedef of <code>Phase</code> automatically guarantees
+the invariant <code>nudge.justify.phase</code> could only be one of five values–<code>Generic</code>, <code>Prepare</code>, <code>Precommit</code>,
+<code>Commit</code> and <code>Decide</code>.</p>
+<p>More complicated invariants, however (including both global invariants and also more complicated local
+invariants, as illustrated by the <code>safe_nudge</code> and <code>safe_pc</code> examples above), can only be enforced by
+runtime logic. This is where the methods in this module come in.</p>
+<h2 id="methods"><a class="doc-anchor" href="#methods">§</a>Methods</h2>
+<p>The methods in this module each help enforce a combination of local and global block tree
+invariants. Specifically, they do this by ensuring that every block tree <em>update</em>, i.e., set of
+state mutations done by the
+<a href="../accessors/internal/struct.BlockTreeSingleton.html#impl-BlockTreeSingleton%3CK%3E-1" title="struct hotstuff_rs::block_tree::accessors::internal::BlockTreeSingleton">top-level updater methods</a> defined on the
+<code>BlockTreeSingleton</code> struct, is invariant-preserving. This idea can be summarized in simple
+formulaic terms as: a block tree that satisfies invariants + a invariant-preserving update = an
+updated block tree that also satisfies invariants.</p>
+<p>Each method works to ensure that every update is invariant-preserving in one of two different ways:</p>
+<ol>
+<li>By checking <strong>whether</strong> an event (like receiving a <code>Proposal</code> or collecting a <code>PhaseCertificate</code>)
+can trigger an invariant-preserving update, or</li>
+<li>By determining <strong>what</strong> invariant-preserving updates should be made in response to an event.</li>
+</ol>
+<p>These two different ways allow us to group the methods in this module into the two different
+categories discussed in the following subsections.</p>
+<p>Before reading the following subsections, please first note that not every top-level updater method
+directly uses or is related to the methods in this module. In particular, <code>set_highest_tc</code>,
+<code>set_highest_view_entered</code>, and <code>set_highest_view_voted</code> have simple enough preconditions that they
+do not need to have functions of the “whether” category in this module, and do state updates that are
+simple enough that they do not need functions of the “what” class either. The methods in this module
+only directly relate to the <a href="BlockTree::insert"><code>insert</code></a> and <a href="BlockTree::update"><code>update</code></a> top-level
+state mutators.</p>
+<h3 id="category-1-whether"><a class="doc-anchor" href="#category-1-whether">§</a>Category 1: “whether”</h3>
+<p>Methods in this category: <a href="fn.safe_pc.html" title="fn hotstuff_rs::block_tree::invariants::safe_pc"><code>safe_pc</code></a>, <a href="fn.safe_block.html" title="fn hotstuff_rs::block_tree::invariants::safe_block"><code>safe_block</code></a>, <a href="fn.safe_nudge.html" title="fn hotstuff_rs::block_tree::invariants::safe_nudge"><code>safe_nudge</code></a>, (outlier) <a href="fn.repropose_block.html" title="fn hotstuff_rs::block_tree::invariants::repropose_block"><code>repropose_block</code></a>.</p>
+<p>These methods check <strong>whether</strong> a <code>PhaseCertificate</code>, <code>Block</code>, or <code>Nudge</code> (respectively) can
+trigger invariant-preserving state updates. Methods in this category feature in the <em>preconditions</em>
+of the <code>insert</code> and <code>update</code>.</p>
+<p>We also include in this category the method called <code>repropose_block</code>. This method does not fit
+neatly into this category in terms of name or purpose, but is closely related to <code>safe_nudge</code> in
+that it serves to help proposers choose a block to propose that satisfy the “consecutive views”
+requirement that <code>safe_nudge</code> checks.</p>
+<h3 id="category-2-what"><a class="doc-anchor" href="#category-2-what">§</a>Category 2: “what”</h3>
+<p>Methods in this category: <a href="fn.pc_to_lock.html" title="fn hotstuff_rs::block_tree::invariants::pc_to_lock"><code>pc_to_lock</code></a>, <a href="fn.block_to_commit.html" title="fn hotstuff_rs::block_tree::invariants::block_to_commit"><code>block_to_commit</code></a>.</p>
+<p>These methods help determine <strong>what</strong> invariant-preserving state updates should be triggered in
+<code>update</code> in response to obtaining a <code>PhaseCertificate</code>, whether through receiving a <code>Proposal</code>,
+<code>Nudge</code>, or <code>NewView</code> message, or by collecting enough <code>PhaseVote</code>s. Methods in this category are
+called <em>inside</em> <a href="BlockTree::update"><code>update</code></a>.</p>
+<h2 id="blockchain-consistency"><a class="doc-anchor" href="#blockchain-consistency">§</a>Blockchain Consistency</h2>
+<p>The most important global invariant that HotStuff-rs guarantees is called “Blockchain Consistency”.
+Blockchain consistency is the property that the block trees of all honest replicas are <strong>identical</strong>
+below a certain block height.</p>
+<p>This “certain block height” is exactly the height of the
+<a href="super::block_tree#safety">Highest Committed Block</a>. Below this height, the block<em>tree</em> (a directed
+acyclic graph of blocks) is reduced to a block<em>chain</em>, a directed acyclic graph of blocks with the
+restriction that every block has exactly one inward edge (formed by the <code>justify</code> of its child) and
+one outward edge (formed by its <code>justify</code> to its parent).</p>
+<p>The blockchain grows as more and more blocks are <em>committed</em>. Committing is a state update whereby
+a block (and transitively, all of its ancestors) become part of the permanent blockchain.
+Critically, committing is a one-way update: once a block becomes committed, it can never be
+un-committed. Because of this, it is essential that the protocol is designed such that a replica only
+commits when it is sure that all other honest replicas have either also committed the block, or will
+eventually.</p>
+<p>This section explains how the methods in this module work together to maintain blockchain
+consistency. The discussion is split into two parts:</p>
+<ol>
+<li>First, <a href="#locking">Locking</a> discusses an intermediate state that blocks enter after being inserted
+but before being committed, that is, being “Locked”.</li>
+<li>Then, <a href="#committing">Committing</a> discusses how blocks move between being locked into being committed.</li>
+</ol>
+<h3 id="locking"><a class="doc-anchor" href="#locking">§</a>Locking</h3>
+<p>Before a block is committed, its branch must first be locked.</p>
+<p>Locking ensures that an honest replica only commits a block when either of the following two
+conditions hold:</p>
+<ol>
+<li>All other honest replicas have also committed the block, in which case the commit is trivially
+consistent, or</li>
+<li>If not all honest replicas have committed the block, then a quorum of replicas is currently
+<em>locked</em> on the block, which makes it impossible for a PC for a conflicting block to be formed.</li>
+</ol>
+<p>The consequence of condition 2 is that condition 1 will <em>eventually</em> hold, making the block safe to
+commit.</p>
+<p>Locking entails keeping track of a block tree variable called
+<a href="super::block_tree#safety">“Locked PC”</a> and doing two things with it:</p>
+<ol>
+<li><strong>Updating</strong> the Locked PC whenever it is appropriate, according to the logic implemented by
+<code>pc_to_lock</code>, and</li>
+<li><strong>Checking</strong> every PC received or collected against the Locked PC. Only PCs that pass this check
+and therefore “satisfy the lock” are allowed to cause state updates.</li>
+</ol>
+<p>Updating the locked PC and checking the locked PC is discussed in turn in the following two
+subsections:</p>
+<h4 id="locking-on-a-block"><a class="doc-anchor" href="#locking-on-a-block">§</a>Locking on a Block</h4>
+<p>Any time <code>update</code> is called, the <code>locked_pc</code> should potentially be updated. The <a href="fn.pc_to_lock.html" title="fn hotstuff_rs::block_tree::invariants::pc_to_lock"><code>pc_to_lock</code></a>
+method in this module decides what locked PC should be <em>updated to</em>.</p>
+<p>The precise logic used by <code>pc_to_lock</code> to decide which PC to lock on is documented in
+<a href="fn.pc_to_lock.html#pc_to_lock-logic" title="fn hotstuff_rs::block_tree::invariants::pc_to_lock">the doc for <code>pc_to_lock</code></a>. In short, the basic logic for choosing
+which PC to lock in HotStuff-rs is the same as the basic logic for choosing which PC to lock in the
+PODC’19 HotStuff paper, that is, “lock on seeing a 2-Chain”.</p>
+<p>The basic logic is already well-documented in the PODC ’19 paper, so for brevity, we do not
+re-describe it here. Instead, in the rest of this subsection, we describe a small but nuanced
+difference in the precise logic, and then explain the rationale behind this difference:</p>
+<p>In both HotStuff-rs and PODC ’19 HotStuff, which PC <code>pc_to_lock</code> decides to lock on upon receiving
+<code>justify</code> depends on what <code>justify.phase</code> is:</p>
+<ul>
+<li>If <code>justify.phase</code> is <code>Generic</code>, <code>Prepare</code>, or <code>Precommit</code>, <code>pc_to_lock</code>‘s
+decision rule is exactly the same as the decision rule used in the algorithm in the original (PODC’
+19) HotStuff paper that corresponds to the <a href="../../hotstuff/index.html#operating-mode" title="mod hotstuff_rs::hotstuff">operating mode</a> that the
+<code>Phase</code> is part of (recall that the Pipelined Mode corresponds to Algorithm 1, while the Phased Mode
+corresponds to Algorithm 3).</li>
+<li>On the other hand, if <code>justify.phase</code> is <code>Commit</code> or <code>Decide</code>, <code>pc_to_lock</code> will decide to lock on
+<code>justify</code> (as long as the current <code>locked_pc.block</code> is different from <code>justify.block</code>). This is
+<strong>different</strong> from the logic used in Algorithm 1 in the original HotStuff paper, which does not
+update <code>locked_pc</code> upon receiving a <code>Commit</code> PC (there is no phase called <code>Decide</code> in the original
+HotStuff paper).</li>
+</ul>
+<p>The reason why the PODC ’19 HotStuff does not lock upon receiving a <code>Commit</code> or <code>Decide</code> PC while
+HotStuff-rs does becomes clearer when we consider that the original HotStuff makes the simplifying
+assumption that receiving any proposal implies that we have received every proposal in the chain
+that precedes the proposal. E.g., receiving a proposal for a block at height 10 means that we (the
+replica) has previously received a complete set of proposals for the ancestor blocks at heights
+0..9, <em>including for every phase</em>.</p>
+<p>This assumption simplifies the specification of the algorithm, and is one that is made by many
+publications. However, this assumption is difficult to uphold in a production setting, where
+messages are often dropped. HotStuff-rs’ <a href="../../block_sync/index.html" title="mod hotstuff_rs::block_sync">Block Sync</a> goes some way toward making
+this assumption hold, but is not perfect: in particular, Sync Servers only send their singular
+current <a href="../../block_sync/messages/struct.BlockSyncResponse.html#structfield.highest_pc" title="field hotstuff_rs::block_sync::messages::BlockSyncResponse::highest_pc"><code>highest_pc</code></a> in their
+<code>SyncResponse</code>s, which could be a PC of any phase: <code>Generic</code> up to <code>Decide</code>.</p>
+<p>This means that if we use the same logic as used in Algorithm 1 to decide on which PC to lock on
+upon receiving a <a href="../../hotstuff/index.html#phased-mode" title="mod hotstuff_rs::hotstuff">phased mode</a> PC, i.e., to lock only if
+<code>justify.phase == Precommit</code>, then we will fail to lock on <code>justify.block</code> if <code>justify.phase</code> is
+<code>Commit</code> or <code>Decide</code>, which can lead to safety violations because the next block may then extend
+a conflicting branch.</p>
+<p>Because extending the Block Sync protocol to return multiple PCs in a <code>SyncResponse</code> could be
+complicated (in particular, it would probably require replicas to store extra state), we instead
+solve this issue by deviating from PODC ’19 HotStuff slightly by locking upon receiving a
+<code>Commit</code> or <code>Decide</code> PC.</p>
+<h4 id="checking-against-the-lock"><a class="doc-anchor" href="#checking-against-the-lock">§</a>Checking against the Lock</h4>
+<p>The <a href="fn.safe_pc.html#conditional-checks" title="fn hotstuff_rs::block_tree::invariants::safe_pc">3rd predicate of <code>safe_pc</code></a> checks whether any received or
+collected PC satisfies the lock and therefore is allowed to trigger state updates. This predicate
+is exactly the same as the corresponding predicate in the PODC ’19 HotStuff paper, but is simple
+enough that we describe it and the rationale behind it fully in the rest of this subsection.</p>
+<p>The 3rd predicate comprises of two clauses, joined by an “or”:</p>
+<ol>
+<li><strong>Safety clause</strong>: <code>pc.block</code> extends from <code>locked_pc.block</code>, <em>or</em></li>
+<li><strong>Liveness clause</strong>: <code>pc.view</code> is greater than <code>locked_pc.view</code>.</li>
+</ol>
+<p>In stable cases–i.e., where in every view, either 1/3rd of replicas lock on the same <code>locked_pc</code>,
+or none lock–the safety clause will always be satisfied. This ensures that the <code>pc</code> extends the
+branch headed by the locked block.</p>
+<p>In unstable cases, however, where e.g., messages are dropped or a proposer is faulty, less than
+1/3rd but more than zero replicas may lock on the same <code>locked_pc</code>. If, in this scenario, <code>safe_pc</code>
+only comprises of the safety clause and a <code>Block</code> or <code>Nudge</code> that conflicts with <code>locked_pc</code> is
+proposed in the next view, only replicas that didn’t lock on <code>locked_pc</code> in the previous view will
+be able to accept the new <code>Block</code> or <code>Nudge</code> and make progress, while the replicas that did lock
+will be stuck, unable to grow their blockchain further.</p>
+<p>This is where the liveness clause comes in. This clause enables the replicas that did lock on the
+now “abandoned” PC to eventually accept new <code>Block</code>s and <code>Nudge</code>s, and does so by relaxing the
+third predicate to allow <code>Block</code>s and <code>Nudge</code>s that build on a different branch than the current
+<code>locked_pc.block</code> to cause state updates as long as the PC they contain has a higher view than
+<code>locked_pc.view</code>.</p>
+<h3 id="committing"><a class="doc-anchor" href="#committing">§</a>Committing</h3>
+<p>As is the case with Locking, Committing in HotStuff-rs follows the same basic logic as committing in
+PODC ’19 HotStuff, but with a small and nuanced difference. The following two subsections discuss, in
+turn:</p>
+<ol>
+<li>The conditions in which a block becomes committed, one of the conditions being a “consecutive views
+requirement” that is more relaxed than the “same views requirement” used in Algorithm 1 of PODC ’19
+HotStuff.</li>
+<li>How the algorithm requires that replicas <em>re-propose</em> existing blocks in certain conditions in order
+to satisfy the consecutive views requirement while still achieving Immediacy.</li>
+</ol>
+<h4 id="committing-a-block"><a class="doc-anchor" href="#committing-a-block">§</a>Committing a Block</h4>
+<p>Any time <code>update</code> is called, blocks should potentially be committed. The <a href="fn.block_to_commit.html" title="fn hotstuff_rs::block_tree::invariants::block_to_commit"><code>block_to_commit</code></a> method
+in this module decides what blocks should be committed.</p>
+<p>Like with <code>pc_to_lock</code>, the precise logic used by <code>block_to_commit</code> is documented in
+<a href="fn.block_to_commit.html#block_to_commit-logic" title="fn hotstuff_rs::block_tree::invariants::block_to_commit">the doc for <code>block_to_commit</code></a>. Again, the logic used for
+choosing which block to commit in HotStuff-rs is broadly similar as the logic used for choosing
+which block to commit in the PODC ’19 HotStuff paper.</p>
+<p>In particular, the logic used in HotStuff-rs’ Pipelined Mode is the same as the logic used in
+Algorithm 3 in PODC ’19 HotStuff; that is, a block should be committed in the Pipelined Mode when it
+meets two requirements:</p>
+<ol>
+<li><strong>3-Chain</strong>: the block must head a sequence of 3 PCs.</li>
+<li><strong>Consecutive views</strong>: the 3 PCs that follow the block must each have <em>consecutively increasing</em>
+views, i.e., <code>justify3.view == justify2.view + 1 == justify1.view + 2</code> where
+<code>justify3.block.justify == justify2</code>, <code>justify2.block.justify == justify1</code>, and <code>justify1.block = block</code>.</li>
+</ol>
+<p>The nuanced difference between HotStuff-rs and PODC ’19 HotStuff with regards to <code>block_to_commit</code>
+logic has to do with the <em>Phased Mode</em>. Specifically, the difference is that PODC ‘19’s Algorithm 1
+requires that <code>Prepare</code>, <code>Precommit</code>, and <code>Commit</code> PCs that follow a block have the <strong>same view</strong>
+number in order for this sequence of PCs to commit the block, whereas on the other hand,
+HotStuff-rs’ Phased Mode requires <em>only</em> that these PCs have <strong>consecutive view</strong> numbers, just
+like Pipelined Mode and Algorithm 3.</p>
+<p>The underlying reason why the same view requirement is used in PODC ’19’s Algorithm 1 but the
+strictly less stringent consecutive views requirement is used in Phased Mode is one specific
+difference between these two algorithms:</p>
+<ul>
+<li>In Algorithm 1, each view is comprised of <em>3 phases</em>.</li>
+<li>In Phased Mode, each view is comprised of only <em>1 phase</em>.</li>
+</ul>
+<p>The result is that in Phased Mode, <code>Prepare</code>, <code>Precommit</code>, and <code>Commit</code> PCs can <em>never</em> have the
+same view number, so if “same view” is a requirement to commit a block in Phased Mode, no block can
+ever be committed.</p>
+<p>The consecutive views requirement relaxes <code>block_to_commit</code> enough in order for blocks to be
+committed, but does not relax it <em>too</em> far that it would obviate the uniqueness guarantee provided
+by locking.</p>
+<p>Consider what could happen if we had instead, for example, relaxed the requirement further to just
+“increasing views”, and a replica commits a block upon receiving <code>Prepare</code>, <code>Precommit</code>, and
+<code>Commit</code> PCs for the block with views 4, 5 and 7. Because 5 and 7 are not contiguous, it could be
+the case that in view 6, a quorum of replicas have locked on a conflicting block, so it would be
+incorrect to assume that a quorum of replicas is currently locked on the block, and therefore it is
+unsafe in this situation to commit the block.</p>
+<h4 id="ensuring-immediacy"><a class="doc-anchor" href="#ensuring-immediacy">§</a>Ensuring Immediacy</h4>
+<p>Recall that Immediacy requires validator set updating blocks to be committed by a <code>Commit</code> PC
+before a direct child can be inserted. This requirement, combined with the consecutive views
+requirement, creates a challenge for proposers.</p>
+<p>Normally, proposers query the <code>highest_pc</code> and broadcast a <code>Proposal</code> or <code>Nudge</code> containing it
+to all replicas. When views fail to make progress, however, the <code>current_view</code> of live replicas may
+grow to significantly greater than <code>highest_pc.view</code>. If in this situation, more than 1/3rd of
+replicas have locked on a validator set updating block, proposers must not propose a <code>Nudge</code>
+containing the highest PC, since the <a href="fn.safe_nudge.html#conditional-checks" title="fn hotstuff_rs::block_tree::invariants::safe_nudge">4th predicate of <code>safe_nudge</code></a>
+wil prevent honest replicas from voting on it, and hence prevent a quorum for the <code>Nudge</code> from being
+formed.</p>
+<p>To make progress in this situation, a proposer must re-propose either the locked block, or a
+(possibly new) sibling of the locked block. The implementation in HotStuff-rs chooses to do the
+former: the <a href="fn.repropose_block.html" title="fn hotstuff_rs::block_tree::invariants::repropose_block"><code>repropose_block</code></a> method in this module helps determine whether a proposer should
+re-propose a block by considering its <code>current_view</code> and the local block tree’s <code>highest_view.pc</code>,
+and if it finds that it <em>should</em> re-propose a block, returns the hash of the block that should
+be re-proposed so that the proposer can get it from the block tree.</p>
+</div></details><h2 id="functions" class="section-header">Functions<a href="#functions" class="anchor">§</a></h2><ul class="item-table"><li><div class="item-name"><a class="fn" href="fn.block_to_commit.html" title="fn hotstuff_rs::block_tree::invariants::block_to_commit">block_<wbr>to_<wbr>commit</a><span title="Restricted Visibility">&nbsp;🔒</span> </div><div class="desc docblock-short">Get the <code>Block</code> in <code>block_tree</code> (if any) that, along with all of its uncommitted predecessors,
+should be committed after the replica sees <code>justify</code>.</div></li><li><div class="item-name"><a class="fn" href="fn.extends_locked_pc_block.html" title="fn hotstuff_rs::block_tree::invariants::extends_locked_pc_block">extends_<wbr>locked_<wbr>pc_<wbr>block</a><span title="Restricted Visibility">&nbsp;🔒</span> </div><div class="desc docblock-short">Check whether <code>pc</code> belongs to the branch that extends from the <code>block_tree</code>’s <code>locked_pc.block</code>.</div></li><li><div class="item-name"><a class="fn" href="fn.pc_to_lock.html" title="fn hotstuff_rs::block_tree::invariants::pc_to_lock">pc_<wbr>to_<wbr>lock</a><span title="Restricted Visibility">&nbsp;🔒</span> </div><div class="desc docblock-short">Get the PC (if any) that should be set as the Locked PC after the replica sees the given <code>justify</code>.</div></li><li><div class="item-name"><a class="fn" href="fn.repropose_block.html" title="fn hotstuff_rs::block_tree::invariants::repropose_block">repropose_<wbr>block</a><span title="Restricted Visibility">&nbsp;🔒</span> </div><div class="desc docblock-short">Get the <code>Block</code> in the <code>block_tree</code> which a leader of the <code>current_view</code> should re-propose in order
+to satisfy the Consecutive Views Rule and make progress in the view.</div></li><li><div class="item-name"><a class="fn" href="fn.safe_block.html" title="fn hotstuff_rs::block_tree::invariants::safe_block">safe_<wbr>block</a><span title="Restricted Visibility">&nbsp;🔒</span> </div><div class="desc docblock-short">Check whether <code>block</code> can safely cause updates to <code>block_tree</code>, given the replica’s <code>chain_id</code>.</div></li><li><div class="item-name"><a class="fn" href="fn.safe_nudge.html" title="fn hotstuff_rs::block_tree::invariants::safe_nudge">safe_<wbr>nudge</a></div><div class="desc docblock-short">Check whether <code>nudge</code> can safely cause updates to <code>block_tree</code>, given the replica’s <code>current_view</code>
+and <code>chain_id</code>.</div></li><li><div class="item-name"><a class="fn" href="fn.safe_pc.html" title="fn hotstuff_rs::block_tree::invariants::safe_pc">safe_pc</a><span title="Restricted Visibility">&nbsp;🔒</span> </div><div class="desc docblock-short">Check whether <code>pc</code> can safely cause updates to <code>block_tree</code>, given the replica’s <code>chain_id</code>.</div></li></ul></section></div></main></body></html>
